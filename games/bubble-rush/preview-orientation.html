@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<title>Bubble Rush — 方向預覽</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{height:100%}
+  body{background:radial-gradient(ellipse at 50% 0%,#131a3a,#05060f 70%);color:#eaf6ff;
+       font-family:-apple-system,"Noto Sans TC",system-ui,sans-serif;overflow:hidden}
+  #stage{position:absolute;inset:0;display:flex;align-items:center;justify-content:center}
+  #row{display:flex;gap:46px;align-items:center;transform-origin:center center}
+  .dev{display:flex;flex-direction:column;align-items:center;gap:11px}
+  .cap{font-size:15px;letter-spacing:.2em;text-transform:uppercase;opacity:.85;font-weight:800}
+  .cap em{font-style:normal;color:#5ce1e6}
+  .sub2{font-size:12px;opacity:.45;letter-spacing:.06em}
+  .shell{position:relative;border-radius:26px;padding:11px;
+         background:linear-gradient(160deg,#2f3550,#12162a);
+         box-shadow:0 22px 70px rgba(0,0,0,.7), inset 0 0 0 1px rgba(255,255,255,.08)}
+  .shell::after{content:"";position:absolute;inset:4px;border-radius:22px;
+         box-shadow:inset 0 0 0 1.5px rgba(0,0,0,.9);pointer-events:none;z-index:5}
+  .screen{border-radius:17px;overflow:hidden;background:#07091a}
+  iframe{border:0;display:block;background:#07091a}
+  .verdict{font-size:13px;padding:6px 15px;border-radius:999px;font-weight:700;letter-spacing:.04em;white-space:nowrap}
+  .good{background:rgba(92,225,230,.16);color:#7ef0f5;box-shadow:inset 0 0 0 1px rgba(92,225,230,.38)}
+  .meh {background:rgba(255,217,61,.12);color:#ffd93d;box-shadow:inset 0 0 0 1px rgba(255,217,61,.32)}
+  .title{position:absolute;top:22px;left:0;right:0;text-align:center;font-size:16px;
+         font-weight:800;letter-spacing:.05em;opacity:.9}
+  .title span{color:#5ce1e6}
+  .hide{display:none !important}
+</style>
+</head>
+<body>
+<div class="title">Bubble Rush — <span>方向預覽</span></div>
+<div id="stage">
+  <div id="row">
+
+    <div class="dev" id="devP">
+      <div class="cap">直向 <em>Portrait</em></div>
+      <div class="sub2">390 × 844</div>
+      <div class="shell"><div class="screen">
+        <iframe id="fP" src="index.html?o=p" width="390" height="844" scrolling="no"></iframe>
+      </div></div>
+      <div class="verdict meh">上下黑邊・玩到但浪費屏幕</div>
+    </div>
+
+    <div class="dev" id="devL">
+      <div class="cap">橫向 <em>Landscape</em></div>
+      <div class="sub2">844 × 390</div>
+      <div class="shell"><div class="screen">
+        <iframe id="fL" src="index.html?o=l" width="844" height="390" scrolling="no"></iframe>
+      </div></div>
+      <div class="verdict good">填滿畫面・體驗最好 👍</div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+// Show both, or a single orientation via #portrait / #landscape.
+// Scale so the whole thing always fits the viewport (screenshot-safe).
+function layout(){
+  const h = location.hash.replace('#','');
+  const showP = h !== 'landscape';
+  const showL = h !== 'portrait';
+  document.getElementById('devP').classList.toggle('hide', !showP);
+  document.getElementById('devL').classList.toggle('hide', !showL);
+  document.querySelector('.title').classList.toggle('hide', !!h);
+
+  const row = document.getElementById('row');
+  row.style.transform = 'scale(1)';
+  const availH = window.innerHeight - 30;
+  const availW = window.innerWidth  - 30;
+  const sH = availH / row.offsetHeight;
+  const sW = availW / row.offsetWidth;
+  const s  = Math.min(1, sH, sW);
+  row.style.transform = 'scale(' + s.toFixed(4) + ')';
+}
+addEventListener('hashchange', layout);
+addEventListener('resize', layout);
+addEventListener('load', () => setTimeout(layout, 120));
+</script>
+</body>
+</html>

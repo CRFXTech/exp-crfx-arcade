@@ -1,0 +1,771 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#0b1026">
+<title>Bubble Rush</title>
+<style>
+  :root{
+    --bg1:#0b1026; --bg2:#1a1040; --accent:#5ce1e6; --star:#ffd93d;
+    --danger:#ff5c7a; --ink:#eaf6ff;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{height:100%;overflow:hidden;background:#07091a;
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans TC",system-ui,sans-serif}
+  #wrap{position:fixed;inset:0;display:flex;align-items:center;justify-content:center}
+  canvas{display:block;width:100%;height:100%;touch-action:none;cursor:pointer}
+  .overlay{position:fixed;inset:0;display:flex;flex-direction:column;
+    align-items:center;justify-content:center;gap:18px;color:var(--ink);
+    text-align:center;padding:24px;backdrop-filter:blur(6px);
+    background:radial-gradient(ellipse at 50% 40%,rgba(26,16,64,.72),rgba(7,9,26,.94));
+    transition:opacity .28s ease;z-index:10}
+  .overlay.hidden{opacity:0;pointer-events:none}
+  h1{font-size:clamp(30px,9vw,52px);letter-spacing:.06em;font-weight:800;
+    background:linear-gradient(180deg,#eaf6ff,#5ce1e6);-webkit-background-clip:text;
+    background-clip:text;color:transparent;filter:drop-shadow(0 0 22px rgba(92,225,230,.45))}
+  .sub{font-size:clamp(13px,3.6vw,16px);opacity:.82;line-height:1.85;max-width:22em}
+  .btn{margin-top:6px;padding:15px 42px;border:0;border-radius:999px;
+    font-size:clamp(16px,4.4vw,19px);font-weight:800;letter-spacing:.08em;color:#04121a;
+    background:linear-gradient(135deg,#7ef0f5,#5ce1e6 45%,#39c7d6);
+    box-shadow:0 10px 34px rgba(92,225,230,.42),inset 0 1px 0 rgba(255,255,255,.6);
+    cursor:pointer;transition:transform .13s ease,box-shadow .13s ease}
+  .btn:active{transform:scale(.955);box-shadow:0 4px 16px rgba(92,225,230,.32)}
+  .how{display:grid;gap:10px;font-size:clamp(12.5px,3.4vw,15px);opacity:.9;
+    text-align:left;background:rgba(255,255,255,.05);padding:18px 22px;border-radius:16px;
+    border:1px solid rgba(92,225,230,.2)}
+  .how b{color:var(--accent)}
+  .score-big{font-size:clamp(48px,15vw,86px);font-weight:900;line-height:1;
+    color:var(--star);filter:drop-shadow(0 0 26px rgba(255,217,61,.5))}
+  .label{font-size:13px;letter-spacing:.22em;opacity:.6;text-transform:uppercase}
+  .newbest{color:var(--star);font-weight:800;font-size:15px;letter-spacing:.1em;
+    animation:pulse 1.1s ease-in-out infinite}
+  @keyframes pulse{0%,100%{opacity:.55}50%{opacity:1}}
+  .row{display:flex;gap:34px;align-items:flex-end;justify-content:center}
+  .stat{display:flex;flex-direction:column;gap:5px;align-items:center}
+  .stat span:last-child{font-size:clamp(20px,6vw,28px);font-weight:800}
+  #hud{position:fixed;top:0;left:0;right:0;padding:16px 20px;display:flex;
+    justify-content:space-between;align-items:flex-start;pointer-events:none;z-index:5;
+    color:var(--ink);font-weight:800;text-shadow:0 2px 12px rgba(0,0,0,.6)}
+  #hudScore{font-size:clamp(30px,8vw,44px);line-height:1;letter-spacing:.02em}
+  #hudCombo{font-size:clamp(13px,3.6vw,17px);color:var(--star);opacity:0;
+    transition:opacity .18s ease;letter-spacing:.06em}
+  #hudCombo.on{opacity:1}
+  #hudBest{font-size:clamp(11px,3.1vw,13px);opacity:.62;letter-spacing:.1em;text-align:right}
+</style>
+</head>
+<body>
+<div id="wrap"><canvas id="c"></canvas></div>
+
+<div id="hud">
+  <div>
+    <div id="hudScore">0</div>
+    <div id="hudCombo">COMBO ×1</div>
+  </div>
+  <div id="hudBest">BEST 0</div>
+</div>
+
+<div class="overlay" id="ovStart">
+  <h1>BUBBLE RUSH</h1>
+  <div class="sub">按住上升・放開下墜<br>穿過空隙，收集星星</div>
+  <div class="how">
+    <div>👆 <b>按住</b> 畫面 → 泡泡上升</div>
+    <div>🖐 <b>放開</b> → 泡泡下墜</div>
+    <div>⭐ <b>星星</b> +1 分・連續收集有 COMBO</div>
+    <div>🔺 <b>尖刺</b> 撞到即完</div>
+  </div>
+  <button class="btn" id="btnStart">開始</button>
+</div>
+
+<div class="overlay hidden" id="ovOver">
+  <div class="label">得分</div>
+  <div class="score-big" id="finalScore">0</div>
+  <div id="newBest" class="newbest" style="display:none">🎉 新紀錄！</div>
+  <div class="row">
+    <div class="stat"><span class="label">星星</span><span id="finalStars">0</span></div>
+    <div class="stat"><span class="label">最遠</span><span id="finalDist">0m</span></div>
+    <div class="stat"><span class="label">最佳</span><span id="finalBest">0</span></div>
+  </div>
+  <button class="btn" id="btnRetry">再玩</button>
+</div>
+
+<script>
+"use strict";
+/* ============================================================
+   Bubble Rush — one-mechanic arcade
+   Core loop: hold to rise / release to fall, thread the gaps,
+   collect stars, dodge spikes. Built as a single file so the
+   same design ports 1:1 into a Godot scene later.
+   ============================================================ */
+
+// ---------- config (tuned for feel) ----------
+const CFG = {
+  riseAccel      : -2050,   // px/s^2 while holding
+  gravity        :  1450,   // px/s^2 while released
+  drag           :  0.86,   // velocity damping per frame @60fps (normalised)
+  maxSpeed       :  620,
+  scrollBase     :  215,    // world scroll px/s at start
+  scrollRamp     :  9.5,    // +px/s per second survived
+  scrollMax      :  520,
+  gapBase        :  268,    // vertical gap height
+  gapMin         :  168,
+  gapShrink      :  1.35,   // px per second
+  wallSpacing    :  330,    // horizontal distance between walls
+  wallMinSpacing :  232,
+  spikeChance    :  0.34,
+  starRadius     :  13,
+  bubbleR        :  19,
+  trailLen       :  16,
+};
+
+// ---------- deterministic RNG (seeded) ----------
+// WHY THIS EXISTS:
+//   A server can only trust a score if it can REPLAY the run.
+//   Same seed + same inputs  =>  same wall layout  =>  same result.
+//   Math.random() can never do that, so all *gameplay-affecting*
+//   randomness goes through this PRNG. Cosmetic stuff (background
+//   stars, particles, screen shake) may still use Math.random().
+function mulberry32(a){
+  return function(){
+    a = (a + 0x6D2B79F5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+let rng = mulberry32(1);
+
+// The simulation MUST advance in fixed steps, otherwise the live run
+// and the replay drift apart on floating-point timestep differences.
+const FIXED_DT = 1/60;
+
+// ---------- canvas / DPR ----------
+const cv  = document.getElementById('c');
+const ctx = cv.getContext('2d', { alpha:false });
+
+// FIXED LOGICAL PLAYFIELD — the simulation always runs in a 1280x720 space,
+// then we scale to fit the screen (letterboxed). Two reasons:
+//   1. Difficulty is identical on every device. The gap is a fixed 268px; on a
+//      short landscape phone (~360px tall) that is 74% of the screen and the
+//      game becomes trivial. In logical space it is always 37%.
+//   2. Anti-cheat. The server replay must run an IDENTICAL world. If physics
+//      read the window size, the server would need to know the client's
+//      viewport — and a mid-run window resize would silently invalidate the
+//      replay of a legitimate game.
+const LOGICAL_W = 1280, LOGICAL_H = 720;
+let W = LOGICAL_W, H = LOGICAL_H;   // physics reads THESE, never the screen
+let DPR = 1, VS = 1, VOX = 0, VOY = 0;
+
+function resize(){
+  DPR = Math.min(window.devicePixelRatio || 1, 2.5);
+  const cw = cv.clientWidth, ch = cv.clientHeight;
+  cv.width  = Math.round(cw * DPR);
+  cv.height = Math.round(ch * DPR);
+
+  // uniform scale + centre (no distortion), aspect ratio preserved
+  VS  = Math.min(cw / LOGICAL_W, ch / LOGICAL_H);
+  VOX = (cw - LOGICAL_W * VS) / 2;
+  VOY = (ch - LOGICAL_H * VS) / 2;
+
+  // paint the letterbox once; render() only ever touches the logical area
+  ctx.setTransform(1,0,0,1,0,0);
+  ctx.fillStyle = '#07091a';
+  ctx.fillRect(0,0,cv.width,cv.height);
+
+  buildStars();
+  if (G.state === 'menu') resetWorld();
+}
+window.addEventListener('resize', resize);
+
+// ---------- persistence ----------
+const KEY = 'bubblerush.best.v1';
+function loadBest(){ try{ return +(localStorage.getItem(KEY)||0)||0; }catch(e){ return 0; } }
+function saveBest(v){ try{ localStorage.setItem(KEY, String(v)); }catch(e){} }
+
+// ---------- game state ----------
+const G = {
+  state: 'menu',            // menu | play | over
+  seed: 1,                  // seed of the current run — the replay key
+  inputs: [],               // [{t, hold}] recorded input timeline
+  recording: false,         // true on a live run, false mid-replay
+  silent: false,            // headless replay: no DOM writes, no persistence
+  holding: false,
+  t: 0,                     // seconds this run
+  step: 0,                  // integer simulation tick — the EXACT input clock
+  dist: 0,
+  score: 0,
+  stars: 0,
+  combo: 0,
+  comboTimer: 0,
+  best: loadBest(),
+  scroll: CFG.scrollBase,
+  gap: CFG.gapBase,
+  shake: 0,
+  flash: 0,
+  hitStop: 0,
+  time: 0,                  // global clock for background anim
+};
+
+let bubble = { x:0, y:0, vy:0 };
+let trail = [];
+let walls = [];
+let parts = [];
+let pops  = [];             // floating score text
+let bgStars = [];
+
+function buildStars(){
+  bgStars = [];
+  const n = Math.round((W*H)/16000);
+  for (let i=0;i<n;i++){
+    bgStars.push({
+      x: Math.random()*W, y: Math.random()*H,
+      r: Math.random()*1.5+0.4,
+      a: Math.random()*0.5+0.15,
+      s: Math.random()*10+4,
+    });
+  }
+}
+
+function resetWorld(){
+  G.state='menu'; G.t=0; G.step=0; G.dist=0; G.score=0; G.stars=0;
+  G.combo=0; G.comboTimer=0; G.scroll=CFG.scrollBase; G.gap=CFG.gapBase;
+  G.shake=0; G.flash=0; G.hitStop=0;
+  G.holding=false; G.inputs=[];
+  bubble = { x: W*0.30, y: H*0.5, vy:0 };
+  trail=[]; walls=[]; parts=[]; pops=[];
+  // pre-seed a pair of walls so the run starts with rhythm
+  let x = W + 140;
+  for (let i=0;i<4;i++){ spawnWall(x); x += CFG.wallSpacing; }
+}
+
+// ---------- spawning ----------
+function spawnWall(x){
+  const gap = G.gap;
+  const margin = 58;
+  // NOTE: rng() not Math.random() — this is gameplay-affecting
+  const gapY = margin + gap/2 + rng()*(H - gap - margin*2);
+  const w = { x, gapY, gap, passed:false, stars:[], spikes:[] };
+
+  // stars inside the gap corridor (offsets are RELATIVE to the wall,
+  // because the wall scrolls — absolute coords would stay behind)
+  const nStar = rng() < 0.78 ? (rng()<0.3?2:1) : 0;
+  for (let i=0;i<nStar;i++){
+    w.stars.push({
+      dxo: (rng()*46-23),
+      y: gapY + (rng()-0.5)*Math.max(28, gap*0.5),
+      taken:false, ph: rng()*Math.PI*2,
+    });
+  }
+  // spikes on the gap lips
+  if (rng() < CFG.spikeChance){
+    const side = rng()<0.5 ? -1 : 1;
+    w.spikes.push({ dxo: 0, y: gapY + side*(gap/2 - 6), dir: -side, r: 15 });
+  }
+  walls.push(w);
+}
+
+// ---------- particles / juice ----------
+function burst(x,y,color,n,spread,life){
+  for(let i=0;i<n;i++){
+    const a = Math.random()*Math.PI*2, sp = (Math.random()*spread+spread*0.25);
+    parts.push({ x,y, vx:Math.cos(a)*sp, vy:Math.sin(a)*sp,
+      life:(life||0.6)*(0.55+Math.random()*0.75), max:life||0.6,
+      color, r: 1.6+Math.random()*3.1 });
+  }
+}
+function popText(x,y,txt,color){ pops.push({ x,y,txt,color,life:0.85,max:0.85 }); }
+
+// ---------- input ----------
+function press(){
+  if (G.state !== 'play') return;
+  if (!G.holding){                                  // record real transitions only
+    G.holding = true;
+    // `s` (integer tick) is the authoritative timing key. Rounding a float
+    // timestamp here silently shifts inputs by a whole step on replay.
+    if (G.recording) G.inputs.push({ s: G.step, t: +G.t.toFixed(3), hold: 1 });
+  }
+}
+function release(){
+  if (!G.holding) return;
+  G.holding = false;
+  if (G.recording) G.inputs.push({ s: G.step, t: +G.t.toFixed(3), hold: 0 });
+}
+
+cv.addEventListener('pointerdown', e=>{ e.preventDefault(); press(); }, {passive:false});
+window.addEventListener('pointerup', release);
+window.addEventListener('pointercancel', release);
+window.addEventListener('blur', release);
+window.addEventListener('keydown', e=>{
+  if(e.code==='Space'||e.code==='ArrowUp'){ e.preventDefault(); if(G.state!=='play') startGame(); else press(); }
+});
+window.addEventListener('keyup', e=>{
+  if(e.code==='Space'||e.code==='ArrowUp'){ e.preventDefault(); release(); }
+});
+
+document.getElementById('btnStart').addEventListener('click', startGame);
+document.getElementById('btnRetry').addEventListener('click', startGame);
+
+function startGame(seed){
+  // guard: this is also a click handler, so `seed` may be a MouseEvent
+  if (typeof seed !== 'number') seed = undefined;
+  G.seed   = (seed === undefined) ? ((Date.now() ^ (Math.random()*0xffffffff)) >>> 0) : (seed >>> 0);
+  rng      = mulberry32(G.seed);   // MUST be set before resetWorld() spawns walls
+  G.silent = false;
+  resetWorld();
+  G.recording = true;
+  G.inputs    = [];
+  G.state='play';
+  document.getElementById('ovStart').classList.add('hidden');
+  document.getElementById('ovOver').classList.add('hidden');
+  document.getElementById('hudCombo').classList.remove('on');
+  return G.seed;
+}
+
+function gameOver(){
+  G.state='over';
+  G.holding=false;
+  if (G.silent) return;            // headless replay: no DOM, no persistence
+  G.shake = 26; G.flash = 1;
+  burst(bubble.x, bubble.y, '#5ce1e6', 34, 420, 0.75);
+  burst(bubble.x, bubble.y, '#ff5c7a', 22, 300, 0.6);
+
+  const isNew = G.score > G.best;
+  if (isNew){ G.best = G.score; saveBest(G.best); }
+  document.getElementById('finalScore').textContent = G.score;
+  document.getElementById('finalStars').textContent = G.stars;
+  document.getElementById('finalDist').textContent  = Math.round(G.dist/10)+'m';
+  document.getElementById('finalBest').textContent  = G.best;
+  document.getElementById('newBest').style.display  = isNew && G.score>0 ? 'block' : 'none';
+  document.getElementById('ovOver').classList.remove('hidden');
+  document.getElementById('hudCombo').classList.remove('on');
+}
+
+// ---------- update ----------
+function update(dt){
+  G.time += dt;
+
+  if (G.hitStop > 0){ G.hitStop -= dt; dt *= 0.18; }
+
+  if (G.state === 'play'){
+    G.t += dt;
+    G.step++;
+    G.scroll = Math.min(CFG.scrollMax, CFG.scrollBase + G.t*CFG.scrollRamp);
+    G.gap    = Math.max(CFG.gapMin,    CFG.gapBase    - G.t*CFG.gapShrink);
+    G.dist  += G.scroll * dt;
+
+    if (G.comboTimer > 0){ G.comboTimer -= dt; if (G.comboTimer<=0) G.combo=0; }
+
+    // bubble physics
+    const a = G.holding ? CFG.riseAccel : CFG.gravity;
+    bubble.vy += a * dt;
+    const damp = Math.pow(CFG.drag, dt*60);
+    bubble.vy *= damp;
+    bubble.vy = Math.max(-CFG.maxSpeed, Math.min(CFG.maxSpeed, bubble.vy));
+    bubble.y += bubble.vy * dt;
+
+    // ceiling / floor
+    if (bubble.y < CFG.bubbleR){ bubble.y = CFG.bubbleR; bubble.vy = Math.max(bubble.vy, 0); }
+    if (bubble.y > H - CFG.bubbleR){
+      bubble.y = H - CFG.bubbleR; bubble.vy = Math.min(bubble.vy, 0);
+      if (!G._grace) { G._grace = true; G.shake = 8; }
+    } else G._grace = false;
+
+    // trail
+    trail.push({ x:bubble.x, y:bubble.y });
+    if (trail.length > CFG.trailLen) trail.shift();
+
+    // walls
+    const dx = G.scroll * dt;
+    for (const w of walls){
+      w.x -= dx;
+      // mark as passed once fully behind the bubble
+      if (!w.passed && w.x + 14 < bubble.x){ w.passed = true; }
+
+      // stars
+      for (const s of w.stars){
+        if (s.taken) continue;
+        const sx = w.x + s.dxo;
+        const ddx = sx - bubble.x, ddy = s.y - bubble.y;
+        if (ddx*ddx + ddy*ddy < (CFG.starRadius+CFG.bubbleR)*(CFG.starRadius+CFG.bubbleR)){
+          s.taken = true;
+          G.stars++; G.combo++; G.comboTimer = 1.5;
+          const gain = 1 + Math.floor(G.combo/3);
+          G.score += gain;
+          burst(sx, s.y, '#ffd93d', 14, 260, 0.55);
+          popText(sx, s.y-6, (G.combo>1? '+'+gain+' ×'+G.combo : '+'+gain), '#ffd93d');
+          G.shake = Math.max(G.shake, 4);
+        }
+      }
+
+      // spikes (circle-vs-triangle approximated as circle)
+      for (const k of w.spikes){
+        const kx = w.x + k.dxo;
+        const ddx = kx - bubble.x, ddy = k.y - bubble.y;
+        const rr = k.r + CFG.bubbleR*0.86;
+        if (ddx*ddx + ddy*ddy < rr*rr){ gameOver(); return; }
+      }
+
+      // gap lips (the real challenge)
+      const half = w.gap/2;
+      const top = w.gapY - half, bot = w.gapY + half;
+      const nearX = Math.abs(w.x - bubble.x) < CFG.bubbleR*0.92;
+      if (nearX && (bubble.y - CFG.bubbleR*0.9 < top || bubble.y + CFG.bubbleR*0.9 > bot)){
+        G.hitStop = 0.16;
+        gameOver(); return;
+      }
+    }
+
+    // recycle walls
+    walls = walls.filter(w => w.x > -80);
+
+    // spacing tightens with time
+    const spacing = Math.max(CFG.wallMinSpacing, CFG.wallSpacing - G.t*4.2);
+    const last = walls[walls.length-1];
+    if (!last || last.x < W - spacing){
+      spawnWall(last ? last.x + spacing : W + 120);
+    }
+  }
+
+  // world particles
+  for (const p of parts){
+    p.life -= dt; p.x += p.vx*dt; p.y += p.vy*dt;
+    p.vy += 620*dt; p.vx *= Math.pow(0.92, dt*60);
+  }
+  parts = parts.filter(p => p.life > 0);
+
+  for (const p of pops){
+    p.life -= dt; p.y -= 44*dt;
+  }
+  pops = pops.filter(p => p.life > 0);
+
+  if (G.shake > 0) G.shake = Math.max(0, G.shake - dt*46);
+  if (G.flash > 0) G.flash = Math.max(0, G.flash - dt*3.2);
+
+  // HUD (skipped during headless replay)
+  if (!G.silent){
+    const hs = document.getElementById('hudScore');
+    if (hs.textContent !== String(G.score)) hs.textContent = G.score;
+    const hb = document.getElementById('hudBest');
+    const bt = 'BEST ' + G.best;
+    if (hb.textContent !== bt) hb.textContent = bt;
+    const hc = document.getElementById('hudCombo');
+    const ct = 'COMBO ×' + G.combo;
+    if (hc.textContent !== ct) hc.textContent = ct;
+    hc.classList.toggle('on', G.state==='play' && G.combo > 1);
+  }
+}
+
+// ---------- render ----------
+function drawBg(){
+  const g = ctx.createLinearGradient(0,0,W*0.5,H);
+  g.addColorStop(0,'#0b1026'); g.addColorStop(0.55,'#141b3d'); g.addColorStop(1,'#1a1040');
+  ctx.fillStyle = g; ctx.fillRect(0,0,W,H);
+
+  // parallax starfield
+  for (const s of bgStars){
+    const sp = G.state==='play' ? G.scroll*0.14 : 8;
+    s.x -= sp*(1/s.s)*0.9*(1/60);
+    if (s.x < -2){ s.x = W+2; s.y = Math.random()*H; }
+    ctx.globalAlpha = s.a * (0.7 + 0.3*Math.sin(G.time*2 + s.r*10));
+    ctx.fillStyle = '#cfe9ff';
+    ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, 6.283); ctx.fill();
+  }
+  ctx.globalAlpha = 1;
+}
+
+function drawWall(w){
+  const half = w.gap/2;
+  const top = w.gapY - half, bot = w.gapY + half;
+  const th = 22;
+  const grd = ctx.createLinearGradient(w.x-th/2,0,w.x+th/2,0);
+  grd.addColorStop(0,'#2b3a6b'); grd.addColorStop(0.5,'#3d5490'); grd.addColorStop(1,'#223056');
+  ctx.fillStyle = grd;
+
+  roundRect(w.x-th/2, -20, th, top+20, 9); ctx.fill();
+  roundRect(w.x-th/2, bot, th, H-bot+20, 9); ctx.fill();
+
+  // neon lips
+  ctx.fillStyle = 'rgba(92,225,230,.85)';
+  ctx.fillRect(w.x-th/2, top-4, th, 4);
+  ctx.fillRect(w.x-th/2, bot, th, 4);
+  ctx.shadowColor='rgba(92,225,230,.8)'; ctx.shadowBlur=14;
+  ctx.fillRect(w.x-th/2, top-4, th, 4);
+  ctx.fillRect(w.x-th/2, bot, th, 4);
+  ctx.shadowBlur=0;
+
+  // stars
+  for (const s of w.stars){
+    if (s.taken) continue;
+    const yy = s.y + Math.sin(G.time*3 + s.ph)*4;
+    drawStar(w.x + s.dxo, yy, CFG.starRadius, '#ffd93d');
+  }
+  // spikes
+  for (const k of w.spikes){
+    const kx = w.x + k.dxo;
+    ctx.fillStyle = '#ff5c7a';
+    ctx.shadowColor='rgba(255,92,122,.9)'; ctx.shadowBlur=14;
+    ctx.beginPath();
+    ctx.moveTo(kx, k.y);
+    ctx.lineTo(kx-13, k.y + k.dir*22);
+    ctx.lineTo(kx+13, k.y + k.dir*22);
+    ctx.closePath(); ctx.fill();
+    ctx.shadowBlur=0;
+  }
+}
+
+function roundRect(x,y,w,h,r){
+  r = Math.min(r, w/2, h/2);
+  ctx.beginPath();
+  ctx.moveTo(x+r,y);
+  ctx.arcTo(x+w,y,x+w,y+h,r);
+  ctx.arcTo(x+w,y+h,x,y+h,r);
+  ctx.arcTo(x,y+h,x,y,r);
+  ctx.arcTo(x,y,x+w,y,r);
+  ctx.closePath();
+}
+
+function drawStar(cx,cy,R,color){
+  ctx.save(); ctx.translate(cx,cy);
+  ctx.fillStyle = color;
+  ctx.shadowColor = color; ctx.shadowBlur = 16;
+  ctx.beginPath();
+  for (let i=0;i<10;i++){
+    const rr = i%2 ? R*0.45 : R;
+    const a  = -Math.PI/2 + i*Math.PI/5;
+    i ? ctx.lineTo(Math.cos(a)*rr, Math.sin(a)*rr) : ctx.moveTo(Math.cos(a)*rr, Math.sin(a)*rr);
+  }
+  ctx.closePath(); ctx.fill();
+  ctx.restore();
+}
+
+function drawBubble(){
+  // trail
+  for (let i=0;i<trail.length;i++){
+    const t = trail[i], k = i/trail.length;
+    ctx.globalAlpha = 0.06 + k*0.24;
+    ctx.fillStyle = '#5ce1e6';
+    ctx.beginPath(); ctx.arc(t.x, t.y, CFG.bubbleR*(0.35+k*0.62), 0, 6.283); ctx.fill();
+  }
+  ctx.globalAlpha = 1;
+
+  const squish = Math.max(-0.22, Math.min(0.22, bubble.vy/1500));
+  const rx = CFG.bubbleR*(1+squish), ry = CFG.bubbleR*(1-squish);
+
+  ctx.save(); ctx.translate(bubble.x, bubble.y);
+  // glow
+  ctx.shadowColor = 'rgba(92,225,230,.95)'; ctx.shadowBlur = 26;
+  const g = ctx.createRadialGradient(-rx*0.35,-ry*0.4,rx*0.15, 0,0,rx*1.15);
+  g.addColorStop(0,'#ffffff'); g.addColorStop(0.35,'#a9f4f8');
+  g.addColorStop(0.78,'#5ce1e6'); g.addColorStop(1,'#2fa9bb');
+  ctx.fillStyle = g;
+  ctx.beginPath(); ctx.ellipse(0,0,rx,ry,0,0,6.283); ctx.fill();
+  ctx.shadowBlur = 0;
+  // highlight
+  ctx.globalAlpha = .8; ctx.fillStyle = '#ffffff';
+  ctx.beginPath(); ctx.ellipse(-rx*0.34,-ry*0.38, rx*0.24, ry*0.18, -0.5, 0, 6.283); ctx.fill();
+  ctx.globalAlpha = 1;
+  ctx.restore();
+}
+
+function render(){
+  ctx.setTransform(VS*DPR,0,0,VS*DPR,VOX*DPR,VOY*DPR);
+  if (G.shake > 0){
+    const s = G.shake;
+    ctx.translate((Math.random()-0.5)*s, (Math.random()-0.5)*s);
+  }
+  drawBg();
+  if (G.state !== 'menu'){
+    for (const w of walls) drawWall(w);
+    drawBubble();
+  }
+  // particles
+  for (const p of parts){
+    ctx.globalAlpha = Math.max(0, p.life/p.max);
+    ctx.fillStyle = p.color;
+    ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,6.283); ctx.fill();
+  }
+  ctx.globalAlpha = 1;
+  // floating text
+  ctx.textAlign='center'; ctx.font='800 19px system-ui,sans-serif';
+  for (const p of pops){
+    ctx.globalAlpha = Math.max(0, p.life/p.max);
+    ctx.fillStyle = p.color;
+    ctx.fillText(p.txt, p.x, p.y);
+  }
+  ctx.globalAlpha = 1;
+  // flash
+  if (G.flash > 0){
+    ctx.fillStyle = 'rgba(255,255,255,'+(G.flash*0.34)+')';
+    ctx.fillRect(0,0,W,H);
+  }
+  if (G.state === 'play'){
+    ctx.textAlign='left'; ctx.globalAlpha=.28; ctx.fillStyle='#eaf6ff';
+    ctx.font='700 13px system-ui,sans-serif';
+    ctx.fillText(Math.round(G.dist/10)+'m', 20, H-18);
+    ctx.globalAlpha=1;
+  }
+}
+
+// ---------- loop (FIXED timestep) ----------
+// Why fixed: with a variable dt the simulation depends on frame rate, so a
+// replay can never reproduce a live run. Fixed steps make the result depend
+// ONLY on (seed, inputs) — which is what makes server-side score
+// verification possible at all.
+let last = performance.now();
+let acc  = 0;
+const MAX_FRAME = 0.25;                    // clamp after tab-switch / lag spike
+function loop(now){
+  let frame = (now - last)/1000; last = now;
+  if (frame > MAX_FRAME) frame = MAX_FRAME;
+  acc += frame;
+  let steps = 0;
+  while (acc >= FIXED_DT && steps < 8){    // cap catch-up work per frame
+    update(FIXED_DT);
+    acc -= FIXED_DT;
+    steps++;
+  }
+  if (steps === 8) acc = 0;                // hopeless backlog — drop it
+  render();
+  requestAnimationFrame(loop);
+}
+
+// ============================================================
+//  POINTS LEDGER — append-only, local (Phase 1)
+//  Balance is NEVER stored, it is always SUM(delta).
+//  That gives auditability, reversibility and exploit detection for
+//  free — the same pattern you would use server-side in Phase 2.
+// ============================================================
+const LEDGER_KEY = 'bubblerush.ledger.v1';
+
+function ledgerLoad(){
+  try { return JSON.parse(localStorage.getItem(LEDGER_KEY) || '[]') || []; }
+  catch(e){ return []; }
+}
+function ledgerSave(l){ try{ localStorage.setItem(LEDGER_KEY, JSON.stringify(l)); }catch(e){} }
+function ledgerBalance(){ return ledgerLoad().reduce((s,e)=>s+e.delta, 0); }
+
+function ledgerAppend(delta, reason, meta){
+  const l  = ledgerLoad();
+  const id = l.length ? l[l.length-1].id + 1 : 1;
+  l.push({ id, ts: Date.now(), delta, reason, meta: meta || null });
+  ledgerSave(l);
+  return id;
+}
+
+// HKT day key. NEVER use the device's local date — a kid can change the
+// device timezone and farm the daily bonus more than once per day.
+function hktDay(offsetDays){
+  const ms = Date.now() + 8*3600*1000 + (offsetDays||0)*86400*1000;
+  return new Date(ms).toISOString().slice(0,10);
+}
+
+const DAILY_BONUS = [5,5,8,12,16,20,25,30];   // index = streak day, capped at day 7
+
+function claimDaily(){
+  const today = hktDay(0);
+  const l = ledgerLoad();
+
+  // idempotent: the ledger itself is the guard, so re-calling cannot double-pay
+  if (l.some(e => e.reason === 'daily_login' && e.meta && e.meta.day === today)){
+    return { claimed:false, streak:null, gain:0, balance: ledgerBalance() };
+  }
+
+  let streak = 1;
+  for (let i = l.length-1; i >= 0; i--){
+    if (l[i].reason === 'daily_login'){
+      if (l[i].meta.day === hktDay(-1)) streak = (l[i].meta.streak || 1) + 1;
+      break;
+    }
+  }
+  const gain = DAILY_BONUS[Math.min(streak, DAILY_BONUS.length-1)];
+  ledgerAppend(gain, 'daily_login', { day: today, streak });
+  return { claimed:true, streak, gain, balance: ledgerBalance() };
+}
+
+// ============================================================
+//  REPLAY / SCORE VERIFICATION
+//  Runs the simulation headless from (seed, inputs) and reports the
+//  outcome. If replayed.score !== submitted score, the run was tampered
+//  with. This is exactly what a server would do to validate a score.
+// ============================================================
+function replayRun(seed, inputs, opts){
+  opts = opts || {};
+  const dt   = opts.dt   || FIXED_DT;
+  const maxT = opts.maxT || 300;
+  const savedSilent = G.silent;
+
+  G.silent    = true;
+  G.seed      = seed >>> 0;
+  rng         = mulberry32(G.seed);
+  resetWorld();                     // consumes the same rng draws as a live run
+  G.recording = false;
+  G.state     = 'play';
+
+  let i = 0, guard = 0;
+  const limit = Math.ceil(maxT/dt);
+  while (G.state === 'play' && guard++ < limit){
+    while (i < inputs.length && (
+             inputs[i].s !== undefined
+               ? inputs[i].s <= G.step                        // exact tick match
+               : inputs[i].t <= G.t + 1e-9                    // legacy float fallback
+           )){
+      G.holding = !!inputs[i].hold; i++;
+    }
+    update(dt);
+  }
+
+  const out = { score:G.score, stars:G.stars, combo:G.combo,
+                dist:G.dist, t:G.t, endState:G.state, steps:guard };
+  G.silent = savedSilent;
+  return out;
+}
+
+// Verify a submitted run: replay it, compare against the claim.
+function verifyRun(claim){
+  const r = replayRun(claim.seed, claim.inputs || []);
+  return {
+    ok      : (r.score === claim.score && r.stars === claim.stars),
+    claimed : { score: claim.score, stars: claim.stars },
+    replayed: { score: r.score,      stars: r.stars },
+    replay  : r,
+  };
+}
+
+// ---------- boot ----------
+resize();
+resetWorld();
+document.getElementById('hudBest').textContent = 'BEST ' + G.best;
+requestAnimationFrame(loop);
+
+// ---------- test hook (harmless in prod, used for automated verification) ----------
+window.__game = {
+  get state(){ return G.state; },
+  get score(){ return G.score; },
+  get stars(){ return G.stars; },
+  get combo(){ return G.combo; },
+  get dist(){ return G.dist; },
+  get walls(){ return walls.length; },
+  get wallInfo(){ return walls.map(w => ({x:+w.x.toFixed(1), gapY:+w.gapY.toFixed(1), gap:+w.gap.toFixed(1), stars:w.stars.filter(s=>!s.taken).length})); },
+  get bubble(){ return {x:bubble.x, y:bubble.y, vy:bubble.vy}; },
+  set gap(v){ G.gap = v; },
+  set scroll(v){ G.scroll = v; },
+  get seed(){ return G.seed; },
+  get inputs(){ return G.inputs.slice(); },
+  get recording(){ return G.recording; },
+  hold(on){ G.holding = !!on; },
+  start: startGame,
+  over: gameOver,
+  step(dt){ update(dt); },
+  cfg: CFG,
+  // --- replay / anti-cheat ---
+  replay: replayRun,
+  verify: verifyRun,
+  // --- points ledger ---
+  ledger: ledgerLoad,
+  balance: ledgerBalance,
+  claimDaily, hktDay,
+  ledgerReset(){ ledgerSave([]); },
+};
+</script>
+</body>
+</html>
