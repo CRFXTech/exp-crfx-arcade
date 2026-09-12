@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>貓咪星球 · 8x8 貓咪放置解謎</title>
+<style>
+  :root {
+    --bg: #FFF8F0;
+    --cell-bg: #FFFFFF;
+    --cell-border: #FFFFFF;
+    --pill-bg: #FFFFFF;
+    --text: #2D2D2D;
+    --accent: #FFB7C5;
+    --success: #A5D6A7;
+    --error: #EF9A9A;
+    --shadow: rgba(0,0,0,0.08);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'PingFang TC', 'Microsoft JhengHei', 'Noto Sans TC', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 16px;
+    overflow-x: hidden;
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+  }
+
+  h1 {
+    font-size: 1.4rem;
+    font-weight: 700;
+    margin-bottom: 4px;
+    letter-spacing: -0.5px;
+  }
+
+  .subtitle {
+    font-size: 0.8rem;
+    color: #888;
+    margin-bottom: 12px;
+  }
+
+  /* ── Top bar ── */
+  .top-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    max-width: 400px;
+    margin-bottom: 12px;
+    gap: 8px;
+  }
+
+  .pill {
+    background: var(--pill-bg);
+    border-radius: 20px;
+    padding: 6px 14px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    box-shadow: 0 2px 6px var(--shadow);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .pill .count {
+    font-size: 1.1rem;
+    font-weight: 800;
+  }
+
+  .pill .count.green { color: #66BB6A; }
+  .pill .count.orange { color: #FFA726; }
+
+  .hearts { display: flex; gap: 2px; }
+  .heart { font-size: 1rem; transition: transform 0.2s; }
+  .heart.lost { opacity: 0.3; transform: scale(0.8); }
+
+  /* ── Game board ── */
+  .board-wrapper {
+    position: relative;
+    width: 100%;
+    max-width: 400px;
+    aspect-ratio: 1;
+  }
+
+  .board {
+    display: grid;
+    grid-template-columns: repeat(8, 1fr);
+    grid-template-rows: repeat(8, 1fr);
+    gap: 3px;
+    width: 100%;
+    height: 100%;
+    background: var(--cell-border);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 16px var(--shadow);
+  }
+
+  .cell {
+    background: var(--cell-bg);
+    border-radius: 6px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.6rem;
+    transition: transform 0.15s, background 0.15s, box-shadow 0.15s;
+    position: relative;
+  }
+
+  .cell:active { transform: scale(0.94); }
+
+  .cell.has-cat {
+    animation: pop-in 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  @keyframes pop-in {
+    0% { transform: scale(0); }
+    100% { transform: scale(1); }
+  }
+
+  .cell.invalid {
+    background: var(--error) !important;
+    animation: shake 0.4s;
+  }
+
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-4px); }
+    75% { transform: translateX(4px); }
+  }
+
+  .cell.valid-hint {
+    background: #E8F5E9;
+    box-shadow: inset 0 0 0 2px var(--success);
+  }
+
+  .cell .cat-emoji {
+    font-size: 1.4rem;
+    line-height: 1;
+    filter: drop-shadow(0 1px 2px rgba(0,0,0,0.15));
+  }
+
+  /* cell background tints per color */
+  .cell.color-teal    { background: #E0F2F1; }
+  .cell.color-lightblue { background: #E3F2FD; }
+  .cell.color-rosy    { background: #FCE4EC; }
+  .cell.color-purple  { background: #F3E5F5; }
+  .cell.color-green   { background: #E8F5E9; }
+  .cell.color-blue    { background: #E1F5FE; }
+  .cell.color-pink    { background: #FCE4EC; }
+  .cell.color-yellow  { background: #FFF8E1; }
+
+  /* ── Cat palette ── */
+  .palette {
+    display: flex;
+    gap: 6px;
+    margin-top: 14px;
+    flex-wrap: wrap;
+    justify-content: center;
+    max-width: 400px;
+  }
+
+  .cat-option {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.3rem;
+    cursor: pointer;
+    border: 3px solid transparent;
+    transition: transform 0.15s, border-color 0.15s;
+    box-shadow: 0 2px 6px var(--shadow);
+    position: relative;
+  }
+
+  .cat-option:active { transform: scale(0.9); }
+
+  .cat-option.selected {
+    border-color: #2D2D2D;
+    transform: scale(1.15);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.18);
+    z-index: 2;
+  }
+
+  .cat-option .color-dot {
+    position: absolute;
+    bottom: -2px;
+    right: -2px;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    border: 2px solid white;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+  }
+
+  .cat-option.used {
+    opacity: 0.35;
+    transform: scale(0.85);
+    pointer-events: none;
+  }
+
+  /* ── Controls ── */
+  .controls {
+    display: flex;
+    gap: 8px;
+    margin-top: 14px;
+    justify-content: center;
+  }
+
+  .btn {
+    background: #FFFFFF;
+    border: none;
+    border-radius: 10px;
+    padding: 10px 18px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 2px 6px var(--shadow);
+    transition: transform 0.12s, box-shadow 0.12s;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  .btn:active { transform: scale(0.95); }
+
+  .btn.primary {
+    background: #FFB7C5;
+    color: #fff;
+  }
+
+  .btn.secondary {
+    background: #E0E0E0;
+  }
+
+  /* ── Rules panel ── */
+  .rules {
+    margin-top: 16px;
+    background: #FFFFFF;
+    border-radius: 12px;
+    padding: 12px 14px;
+    max-width: 400px;
+    width: 100%;
+    font-size: 0.75rem;
+    line-height: 1.5;
+    color: #666;
+    box-shadow: 0 2px 8px var(--shadow);
+  }
+
+  .rules h3 {
+    font-size: 0.8rem;
+    color: #444;
+    margin-bottom: 6px;
+  }
+
+  .rules ul {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+
+  .rules li::before {
+    content: "🐾 ";
+  }
+
+  /* ── Victory overlay ── */
+  .overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    animation: fade-in 0.3s;
+  }
+
+  .overlay.show { display: flex; }
+
+  @keyframes fade-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  .modal {
+    background: white;
+    border-radius: 16px;
+    padding: 28px 32px;
+    text-align: center;
+    max-width: 300px;
+    width: 90%;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+    animation: modal-in 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  @keyframes modal-in {
+    from { transform: scale(0.8) translateY(20px); opacity: 0; }
+    to { transform: scale(1) translateY(0); opacity: 1; }
+  }
+
+  .modal .big-emoji { font-size: 3rem; margin-bottom: 8px; }
+  .modal h2 { font-size: 1.3rem; margin-bottom: 6px; }
+  .modal p { font-size: 0.85rem; color: #888; margin-bottom: 18px; }
+
+  /* ── Responsive ── */
+  @media (max-width: 380px) {
+    h1 { font-size: 1.2rem; }
+    .pill { font-size: 0.75rem; padding: 4px 10px; }
+    .cell { font-size: 1.2rem; }
+    .cell .cat-emoji { font-size: 1.1rem; }
+    .cat-option { width: 38px; height: 38px; font-size: 1.1rem; }
+  }
+</style>
+</head>
+<body>
+
+<h1>🐱 貓咪星球</h1>
+<p class="subtitle">8×8 貓咪放置解謎</p>
+
+<!-- Top bar -->
+<div class="top-bar">
+  <div class="pill">
+    🐾 <span class="count green" id="placedCount">0</span>
+    <span style="color:#999">/ 8</span>
+  </div>
+  <div class="pill">
+    <span class="hearts" id="hearts">
+      <span class="heart">❤️</span>
+      <span class="heart">❤️</span>
+      <span class="heart">❤️</span>
+    </span>
+  </div>
+</div>
+
+<!-- Board -->
+<div class="board-wrapper">
+  <div class="board" id="board"></div>
+</div>
+
+<!-- Cat palette -->
+<div class="palette" id="palette"></div>
+
+<!-- Controls -->
+<div class="controls">
+  <button class="btn secondary" id="undoBtn">↩️ 回轉</button>
+  <button class="btn secondary" id="resetBtn">🔄 重置</button>
+  <button class="btn primary" id="hintBtn">💡 提示</button>
+</div>
+
+<!-- Rules -->
+<div class="rules">
+  <h3>📜 規則</h3>
+  <ul>
+    <li>每隻貓都有不同顏色，整場遊戲共 <strong>8 隻</strong></li>
+    <li>每行（row）淨得有 <strong>1 隻</strong>貓</li>
+    <li>每列（column）淨得有 <strong>1 隻</strong>貓</li>
+    <li>貓咪之間 <strong>8 方向都唔得挨近</strong>（包括斜角）</li>
+    <li>點格放貓 ‧ 再點已放嘅貓可以收回</li>
+  </ul>
+</div>
+
+<!-- Victory overlay -->
+<div class="overlay" id="overlay">
+  <div class="modal">
+    <div class="big-emoji">🎉</div>
+    <h2>全嵌哂！</h2>
+    <p>你成功放咗 8 隻貓，冇違反任何規則！</p>
+    <button class="btn primary" id="playAgainBtn">🔄 再玩一次</button>
+  </div>
+</div>
+
+<script>
+const GRID = 8;
+const COLORS = [
+  { id: 'teal',      name: '深綠茶',   hex: '#4ECDC4', bgClass: 'color-teal' },
+  { id: 'lightblue', name: '天藍',     hex: '#7EC8E3', bgClass: 'color-lightblue' },
+  { id: 'rosy',      name: '薑紫',     hex: '#F7B7A3', bgClass: 'color-rosy' },
+  { id: 'purple',    name: '淡紫',     hex: '#C9B1FF', bgClass: 'color-purple' },
+  { id: 'green',     name: '淡綠',     hex: '#B5EAD7', bgClass: 'color-green' },
+  { id: 'blue',      name: '中藍',     hex: '#6CACE4', bgClass: 'color-blue' },
+  { id: 'pink',      name: '粉紅',     hex: '#FFB7C5', bgClass: 'color-pink' },
+  { id: 'yellow',    name: '芥黃',     hex: '#FFD93D', bgClass: 'color-yellow' },
+];
+
+const CAT_EMOJI = '🐱';
+
+let grid = Array.from({ length: GRID }, () => Array(GRID).fill(null));
+let selectedIdx = 0;
+let placedCount = 0;
+let moves = 0;
+let history = [];
+let hearts = 3;
+let gameOver = false;
+
+const boardEl = document.getElementById('board');
+const paletteEl = document.getElementById('palette');
+const placedCountEl = document.getElementById('placedCount');
+const heartsEl = document.getElementById('hearts');
+const overlayEl = document.getElementById('overlay');
+const undoBtn = document.getElementById('undoBtn');
+const resetBtn = document.getElementById('resetBtn');
+const hintBtn = document.getElementById('hintBtn');
+const playAgainBtn = document.getElementById('playAgainBtn');
+
+function cloneGrid(g) {
+  return g.map(row => [...row]);
+}
+
+function isValidPlacement(r, c) {
+  for (let cc = 0; cc < GRID; cc++) {
+    if (cc !== c && grid[r][cc] !== null) return false;
+  }
+  for (let rr = 0; rr < GRID; rr++) {
+    if (rr !== r && grid[rr][c] !== null) return false;
+  }
+  for (let dr = -1; dr <= 1; dr++) {
+    for (let dc = -1; dc <= 1; dc++) {
+      if (dr === 0 && dc === 0) continue;
+      const nr = r + dr, nc = c + dc;
+      if (nr >= 0 && nr < GRID && nc >= 0 && nc < GRID && grid[nr][nc] !== null) {
+        return false;
+      }
+    }
+  }
+  return true;
+}
+
+function findValidCells() {
+  const valid = [];
+  for (let r = 0; r < GRID; r++) {
+    for (let c = 0; c < GRID; c++) {
+      if (grid[r][c] === null && isValidPlacement(r, c)) {
+        valid.push([r, c]);
+      }
+    }
+  }
+  return valid;
+}
+
+function renderBoard() {
+  boardEl.innerHTML = '';
+  for (let r = 0; r < GRID; r++) {
+    for (let c = 0; c < GRID; c++) {
+      const cell = document.createElement('div');
+      cell.className = 'cell';
+      cell.dataset.r = r;
+      cell.dataset.c = c;
+
+      const cat = grid[r][c];
+      if (cat !== null) {
+        const color = COLORS[cat];
+        cell.classList.add('has-cat', color.bgClass);
+        cell.innerHTML = `<span class="cat-emoji">${CAT_EMOJI}</span>`;
+      }
+
+      cell.addEventListener('click', () => onCellClick(r, c));
+      boardEl.appendChild(cell);
+    }
+  }
+  updateCounts();
+}
+
+function renderPalette() {
+  paletteEl.innerHTML = '';
+  COLORS.forEach((color, idx) => {
+    const opt = document.createElement('div');
+    opt.className = 'cat-option';
+    if (idx === selectedIdx) opt.classList.add('selected');
+    const isUsed = grid.some(row => row.some(cell => cell === idx));
+    if (isUsed) opt.classList.add('used');
+
+    opt.style.background = color.hex;
+    opt.innerHTML = `
+      <span style="position:relative;z-index:1;">${CAT_EMOJI}</span>
+      <span class="color-dot" style="background:${color.hex}"></span>
+    `;
+
+    opt.title = `${color.name} 貓咪`;
+    opt.addEventListener('click', () => {
+      if (gameOver) return;
+      const isUsed = grid.some(row => row.some(cell => cell === idx));
+      if (!isUsed) {
+        selectedIdx = idx;
+        renderPalette();
+        clearHints();
+      }
+    });
+    paletteEl.appendChild(opt);
+  });
+}
+
+function updateCounts() {
+  placedCount = grid.flat().filter(c => c !== null).length;
+  placedCountEl.textContent = placedCount;
+  placedCountEl.className = 'count ' + (placedCount === 8 ? 'green' : 'orange');
+}
+
+function updateHearts() {
+  heartsEl.innerHTML = '';
+  for (let i = 0; i < 3; i++) {
+    const heart = document.createElement('span');
+    heart.className = 'heart' + (i >= hearts ? ' lost' : '');
+    heart.textContent = '❤️';
+    heartsEl.appendChild(heart);
+  }
+}
+
+function onCellClick(r, c) {
+  if (gameOver) return;
+
+  const existing = grid[r][c];
+
+  if (existing !== null) {
+    const catIdx = existing;
+    grid[r][c] = null;
+    history.push({ type: 'remove', r, c, catIdx });
+    moves++;
+    renderBoard();
+    renderPalette();
+    clearHints();
+    checkVictory();
+    return;
+  }
+
+  if (!isValidPlacement(r, c)) {
+    const cellEl = boardEl.querySelector(`[data-r="${r}"][data-c="${c}"]`);
+    if (cellEl) {
+      cellEl.classList.add('invalid');
+      setTimeout(() => cellEl.classList.remove('invalid'), 500);
+    }
+    hearts = Math.max(0, hearts - 1);
+    updateHearts();
+    if (hearts === 0) {
+      gameOver = true;
+      showGameOver();
+    }
+    return;
+  }
+
+  grid[r][c] = selectedIdx;
+  history.push({ type: 'place', r, c, catIdx: selectedIdx });
+  moves++;
+  renderBoard();
+  renderPalette();
+  clearHints();
+  checkVictory();
+}
+
+function checkVictory() {
+  if (placedCount === 8) {
+    gameOver = true;
+    setTimeout(() => showVictory(), 400);
+  }
+}
+
+function showVictory() {
+  overlayEl.querySelector('.big-emoji').textContent = '🎉';
+  overlayEl.querySelector('h2').textContent = '全嵌哂！';
+  overlayEl.querySelector('p').textContent =
+    `你用咗 ${moves} 次，成功放咗 8 隻貓！`;
+  overlayEl.classList.add('show');
+}
+
+function showGameOver() {
+  overlayEl.querySelector('.big-emoji').textContent = '😿';
+  overlayEl.querySelector('h2').textContent = '心機光咗...';
+  overlayEl.querySelector('p').textContent =
+    `只能放 ${placedCount} 隻貓，心機用晒。再試一次！`;
+  overlayEl.classList.add('show');
+}
+
+function undo() {
+  if (history.length === 0 || gameOver) return;
+  const last = history.pop();
+  if (last.type === 'place') {
+    grid[last.r][last.c] = null;
+  } else if (last.type === 'remove') {
+    grid[last.r][last.c] = last.catIdx;
+  }
+  moves++;
+  renderBoard();
+  renderPalette();
+  clearHints();
+}
+
+function resetGame() {
+  grid = Array.from({ length: GRID }, () => Array(GRID).fill(null));
+  selectedIdx = 0;
+  history = [];
+  moves = 0;
+  hearts = 3;
+  gameOver = false;
+  overlayEl.classList.remove('show');
+  renderBoard();
+  renderPalette();
+  updateHearts();
+}
+
+let hintCells = [];
+
+function showHints() {
+  clearHints();
+  const valid = findValidCells();
+  hintCells = valid;
+  valid.forEach(([r, c]) => {
+    const cellEl = boardEl.querySelector(`[data-r="${r}"][data-c="${c}"]`);
+    if (cellEl) cellEl.classList.add('valid-hint');
+  });
+}
+
+function clearHints() {
+  hintCells.forEach(([r, c]) => {
+    const cellEl = boardEl.querySelector(`[data-r="${r}"][data-c="${c}"]`);
+    if (cellEl) cellEl.classList.remove('valid-hint');
+  });
+  hintCells = [];
+}
+
+undoBtn.addEventListener('click', undo);
+resetBtn.addEventListener('click', resetGame);
+hintBtn.addEventListener('click', showHints);
+playAgainBtn.addEventListener('click', resetGame);
+
+renderBoard();
+renderPalette();
+updateHearts();
+
+function autoSelectCat() {
+  for (let i = 0; i < COLORS.length; i++) {
+    const used = grid.some(row => row.some(cell => cell === i));
+    if (!used) {
+      selectedIdx = i;
+      renderPalette();
+      break;
+    }
+  }
+}
+
+const origRenderBoard = renderBoard;
+renderBoard = function() {
+  origRenderBoard();
+  autoSelectCat();
+};
+
+renderBoard();
+</script>
+</body>
+</html>

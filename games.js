@@ -29,8 +29,24 @@ window.GAMES = [
     tags:     ["街機", "單鍵操作", "小朋友", "高分挑戰"],
     added:    "2026-09-11",
   },
+  {
+    id:       "cat-planet",
+    title:    "貓咪星球",
+    title_zh: "貓咪星球",
+    tagline:  "8×8 格放 8 隻貓，行、列、鄰近全唔得撞。",
+    tagline_en: "Place 8 cats on an 8x8 grid — no same row, column, or adjacent.",
+    path:     "games/cat-planet/index.html",
+    thumb:    null,
+    accent:   "#FFB7C5",
+    emoji:    "🐱",
+    players:  "1人",
+    minutes:  "3-5分鐘",
+    orientation: "both",
+    status:   "playable",
+    tags:     ["解謎", "小朋友", "休閒", "貓咪", "邏輯"],
+  },
 
-  /* ---- 下面係樣板，加新遊戲照抄 ---- */
+/* ---- 下面係樣板，加新遊戲照抄 ---- */
   // {
   //   id:       "my-gdevelop-game",
   //   title:    "My Game",
