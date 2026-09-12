@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>貓咪星球 · 8x8 貓咪放置解謎</title>
+<title>貓咪星球 · 貓咪尋找謎題</title>
 <style>
   :root {
     --bg: #FFF8F0;
@@ -15,6 +15,7 @@
     --success: #A5D6A7;
     --error: #EF9A9A;
     --shadow: rgba(0,0,0,0.08);
+    --highlight: #FFD93D;
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -72,10 +73,11 @@
   .pill .count {
     font-size: 1.1rem;
     font-weight: 800;
+    color: #999;
   }
 
   .pill .count.green { color: #66BB6A; }
-  .pill .count.orange { color: #FFA726; }
+  .pill .count.red { color: #E53935; }
 
   .hearts { display: flex; gap: 2px; }
   .heart { font-size: 1rem; transition: transform 0.2s; }
@@ -103,21 +105,23 @@
   }
 
   .cell {
-    background: var(--cell-bg);
+    background: #F0EFEB;
     border-radius: 6px;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.6rem;
-    transition: transform 0.15s, background 0.15s, box-shadow 0.15s;
+    font-size: 1.4rem;
+    transition: transform 0.12s, background 0.15s, box-shadow 0.15s;
     position: relative;
+    border: 2px solid transparent;
   }
 
   .cell:active { transform: scale(0.94); }
+  .cell:active.no-click { transform: none; cursor: default; }
 
   .cell.has-cat {
-    animation: pop-in 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    animation: pop-in 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
   }
 
   @keyframes pop-in {
@@ -125,7 +129,13 @@
     100% { transform: scale(1); }
   }
 
-  .cell.invalid {
+  .cell.selected {
+    border-color: var(--highlight);
+    box-shadow: inset 0 0 0 2px var(--highlight);
+    background: #FFFDF0;
+  }
+
+  .cell.wrong {
     background: var(--error) !important;
     animation: shake 0.4s;
   }
@@ -136,76 +146,15 @@
     75% { transform: translateX(4px); }
   }
 
-  .cell.valid-hint {
-    background: #E8F5E9;
-    box-shadow: inset 0 0 0 2px var(--success);
+  .cell.revealed-hint {
+    background: #FFF9C4 !important;
+    border-color: #FFD54F;
   }
 
   .cell .cat-emoji {
-    font-size: 1.4rem;
+    font-size: 1.3rem;
     line-height: 1;
     filter: drop-shadow(0 1px 2px rgba(0,0,0,0.15));
-  }
-
-  /* cell background tints per color */
-  .cell.color-teal    { background: #E0F2F1; }
-  .cell.color-lightblue { background: #E3F2FD; }
-  .cell.color-rosy    { background: #FCE4EC; }
-  .cell.color-purple  { background: #F3E5F5; }
-  .cell.color-green   { background: #E8F5E9; }
-  .cell.color-blue    { background: #E1F5FE; }
-  .cell.color-pink    { background: #FCE4EC; }
-  .cell.color-yellow  { background: #FFF8E1; }
-
-  /* ── Cat palette ── */
-  .palette {
-    display: flex;
-    gap: 6px;
-    margin-top: 14px;
-    flex-wrap: wrap;
-    justify-content: center;
-    max-width: 400px;
-  }
-
-  .cat-option {
-    width: 44px;
-    height: 44px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.3rem;
-    cursor: pointer;
-    border: 3px solid transparent;
-    transition: transform 0.15s, border-color 0.15s;
-    box-shadow: 0 2px 6px var(--shadow);
-    position: relative;
-  }
-
-  .cat-option:active { transform: scale(0.9); }
-
-  .cat-option.selected {
-    border-color: #2D2D2D;
-    transform: scale(1.15);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.18);
-    z-index: 2;
-  }
-
-  .cat-option .color-dot {
-    position: absolute;
-    bottom: -2px;
-    right: -2px;
-    width: 14px;
-    height: 14px;
-    border-radius: 50%;
-    border: 2px solid white;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
-  }
-
-  .cat-option.used {
-    opacity: 0.35;
-    transform: scale(0.85);
-    pointer-events: none;
   }
 
   /* ── Controls ── */
@@ -214,6 +163,7 @@
     gap: 8px;
     margin-top: 14px;
     justify-content: center;
+    flex-wrap: wrap;
   }
 
   .btn {
@@ -225,16 +175,18 @@
     font-weight: 600;
     cursor: pointer;
     box-shadow: 0 2px 6px var(--shadow);
-    transition: transform 0.12s, box-shadow 0.12s;
+    transition: transform 0.12s, box-shadow 0.12s, background 0.12s;
     display: flex;
     align-items: center;
     gap: 5px;
+    color: var(--text);
   }
 
   .btn:active { transform: scale(0.95); }
+  .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
 
   .btn.primary {
-    background: #FFB7C5;
+    background: var(--accent);
     color: #fff;
   }
 
@@ -242,9 +194,14 @@
     background: #E0E0E0;
   }
 
+  .btn.danger {
+    background: #EF9A9A;
+    color: #fff;
+  }
+
   /* ── Rules panel ── */
   .rules {
-    margin-top: 16px;
+    margin-top: 14px;
     background: #FFFFFF;
     border-radius: 12px;
     padding: 12px 14px;
@@ -252,7 +209,7 @@
     width: 100%;
     font-size: 0.75rem;
     line-height: 1.5;
-    color: #666;
+    color: #555;
     box-shadow: 0 2px 8px var(--shadow);
   }
 
@@ -273,7 +230,7 @@
     content: "🐾 ";
   }
 
-  /* ── Victory overlay ── */
+  /* ── Overlay ── */
   .overlay {
     position: fixed;
     inset: 0;
@@ -310,27 +267,26 @@
 
   .modal .big-emoji { font-size: 3rem; margin-bottom: 8px; }
   .modal h2 { font-size: 1.3rem; margin-bottom: 6px; }
-  .modal p { font-size: 0.85rem; color: #888; margin-bottom: 18px; }
+  .modal p { font-size: 0.85rem; color: #888; margin-bottom: 18px; line-height: 1.5; }
 
   /* ── Responsive ── */
   @media (max-width: 380px) {
     h1 { font-size: 1.2rem; }
     .pill { font-size: 0.75rem; padding: 4px 10px; }
-    .cell { font-size: 1.2rem; }
-    .cell .cat-emoji { font-size: 1.1rem; }
-    .cat-option { width: 38px; height: 38px; font-size: 1.1rem; }
+    .cell { font-size: 1.1rem; }
+    .cell .cat-emoji { font-size: 1rem; }
   }
 </style>
 </head>
 <body>
 
 <h1>🐱 貓咪星球</h1>
-<p class="subtitle">8×8 貓咪放置解謎</p>
+<p class="subtitle">貓咪尋找謎題 · 踩地雷改版</p>
 
 <!-- Top bar -->
 <div class="top-bar">
   <div class="pill">
-    🐾 <span class="count green" id="placedCount">0</span>
+    🐱 <span class="count" id="foundCount">0</span>
     <span style="color:#999">/ 8</span>
   </div>
   <div class="pill">
@@ -347,106 +303,184 @@
   <div class="board" id="board"></div>
 </div>
 
-<!-- Cat palette -->
-<div class="palette" id="palette"></div>
-
 <!-- Controls -->
 <div class="controls">
-  <button class="btn secondary" id="undoBtn">↩️ 回轉</button>
   <button class="btn secondary" id="resetBtn">🔄 重置</button>
-  <button class="btn primary" id="hintBtn">💡 提示</button>
+  <button class="btn primary" id="confirmBtn" disabled>✅ 確認</button>
+  <button class="btn secondary" id="hintBtn">💡 提示</button>
 </div>
 
 <!-- Rules -->
 <div class="rules">
   <h3>📜 規則</h3>
   <ul>
-    <li>每隻貓都有不同顏色，整場遊戲共 <strong>8 隻</strong></li>
-    <li>每行（row）淨得有 <strong>1 隻</strong>貓</li>
-    <li>每列（column）淨得有 <strong>1 隻</strong>貓</li>
-    <li>貓咪之間 <strong>8 方向都唔得挨近</strong>（包括斜角）</li>
-    <li>點格放貓 ‧ 再點已放嘅貓可以收回</li>
+    <li>每行（row）淨得一隻貓</li>
+    <li>每列（column）淨得一隻貓</li>
+    <li>每個顏色區域淨得一隻貓</li>
+    <li>貓之間 8 方向都唔得挨近（包括斜角）</li>
+    <li>點格揀選 → 再點「確認」或同一格揸第二次先探測</li>
   </ul>
 </div>
 
-<!-- Victory overlay -->
-<div class="overlay" id="overlay">
+<!-- Overlays -->
+<div class="overlay" id="winOverlay">
   <div class="modal">
     <div class="big-emoji">🎉</div>
-    <h2>全嵌哂！</h2>
-    <p>你成功放咗 8 隻貓，冇違反任何規則！</p>
-    <button class="btn primary" id="playAgainBtn">🔄 再玩一次</button>
+    <h2>全揾晒！</h2>
+    <p>你成功揾咗 8 隻貓，符合所有規則！</p>
+    <button class="btn primary" id="playAgainWinBtn">🔄 再玩一次</button>
+  </div>
+</div>
+
+<div class="overlay" id="loseOverlay">
+  <div class="modal">
+    <div class="big-emoji">😿</div>
+    <h2>心機光咗...</h2>
+    <p>你已經噎了 3 次， forfeit 喇。再試一次！</p>
+    <button class="btn danger" id="playAgainLoseBtn">🔄 再玩一次</button>
   </div>
 </div>
 
 <script>
+// ═══════════════════════════════════════════════════════════════
+// 貓咪星球 · 貓咪尋找謎題 (v1)
+// 8x8 顏色區域網格，玩家根據行/列/色區約束探測貓位置
+// ═══════════════════════════════════════════════════════════════
+
 const GRID = 8;
+const TOTAL_CATS = 8;
+const MAX_HEARTS = 3;
+
 const COLORS = [
-  { id: 'teal',      name: '深綠茶',   hex: '#4ECDC4', bgClass: 'color-teal' },
-  { id: 'lightblue', name: '天藍',     hex: '#7EC8E3', bgClass: 'color-lightblue' },
-  { id: 'rosy',      name: '薑紫',     hex: '#F7B7A3', bgClass: 'color-rosy' },
-  { id: 'purple',    name: '淡紫',     hex: '#C9B1FF', bgClass: 'color-purple' },
-  { id: 'green',     name: '淡綠',     hex: '#B5EAD7', bgClass: 'color-green' },
-  { id: 'blue',      name: '中藍',     hex: '#6CACE4', bgClass: 'color-blue' },
-  { id: 'pink',      name: '粉紅',     hex: '#FFB7C5', bgClass: 'color-pink' },
-  { id: 'yellow',    name: '芥黃',     hex: '#FFD93D', bgClass: 'color-yellow' },
+  { id: 'teal',      hex: '#4ECDC4', bg: '#E0F2F1' },
+  { id: 'lightblue', hex: '#7EC8E3', bg: '#E3F2FD' },
+  { id: 'rosy',      hex: '#F7B7A3', bg: '#FCE4EC' },
+  { id: 'purple',    hex: '#C9B1FF', bg: '#F3E5F5' },
+  { id: 'green',     hex: '#B5EAD7', bg: '#E8F5E9' },
+  { id: 'blue',      hex: '#6CACE4', bg: '#E1F5FE' },
+  { id: 'pink',      hex: '#FFB7C5', bg: '#FCE4EC' },
+  { id: 'yellow',    hex: '#FFD93D', bg: '#FFF8E1' },
 ];
 
 const CAT_EMOJI = '🐱';
+const WRONG_EMOJI = '✖';
 
-let grid = Array.from({ length: GRID }, () => Array(GRID).fill(null));
-let selectedIdx = 0;
-let placedCount = 0;
-let moves = 0;
-let history = [];
-let hearts = 3;
+// ── State ──
+let colorGrid = [];       // 8x8: 每格的顏色索引 (0-7)
+let catPositions = [];    // [[r,c], ...] 貓嘅真實位置
+let catColorMap = {};     // "r,c" -> color index
+let foundPositions = [];  // 已揾到嘅貓位置
+let hearts = MAX_HEARTS;
+let selectedCell = null;  // {r, c} 或 null
 let gameOver = false;
+let moveCount = 0;
 
+// ── DOM ──
 const boardEl = document.getElementById('board');
-const paletteEl = document.getElementById('palette');
-const placedCountEl = document.getElementById('placedCount');
+const foundCountEl = document.getElementById('foundCount');
 const heartsEl = document.getElementById('hearts');
-const overlayEl = document.getElementById('overlay');
-const undoBtn = document.getElementById('undoBtn');
+const confirmBtn = document.getElementById('confirmBtn');
 const resetBtn = document.getElementById('resetBtn');
 const hintBtn = document.getElementById('hintBtn');
-const playAgainBtn = document.getElementById('playAgainBtn');
+const winOverlay = document.getElementById('winOverlay');
+const loseOverlay = document.getElementById('loseOverlay');
 
-function cloneGrid(g) {
-  return g.map(row => [...row]);
+// ── Helpers ──
+function key(r, c) { return r + ',' + c; }
+
+function isAdjacent(p1, p2) {
+  return Math.abs(p1[0] - p2[0]) <= 1 && Math.abs(p1[1] - p2[1]) <= 1;
 }
 
-function isValidPlacement(r, c) {
-  for (let cc = 0; cc < GRID; cc++) {
-    if (cc !== c && grid[r][cc] !== null) return false;
-  }
-  for (let rr = 0; rr < GRID; rr++) {
-    if (rr !== r && grid[rr][c] !== null) return false;
-  }
-  for (let dr = -1; dr <= 1; dr++) {
-    for (let dc = -1; dc <= 1; dc++) {
-      if (dr === 0 && dc === 0) continue;
-      const nr = r + dr, nc = c + dc;
-      if (nr >= 0 && nr < GRID && nc >= 0 && nc < GRID && grid[nr][nc] !== null) {
-        return false;
+// 生成一組有效嘅貓位置（每行1、每列1、8方向不挨近）
+function generateValidCats() {
+  for (let attempt = 0; attempt < 5000; attempt++) {
+    let cols = [0,1,2,3,4,5,6,7];
+    // Fisher-Yates shuffle
+    for (let i = cols.length - 1; i > 0; i--) {
+      let j = Math.floor(Math.random() * (i + 1));
+      [cols[i], cols[j]] = [cols[j], cols[i]];
+    }
+    let positions = cols.map((c, r) => [r, c]);
+    let valid = true;
+    for (let i = 0; i < positions.length && valid; i++) {
+      for (let j = i + 1; j < positions.length; j++) {
+        if (isAdjacent(positions[i], positions[j])) {
+          valid = false;
+          break;
+        }
       }
     }
+    if (valid) return positions;
   }
-  return true;
+  // fallback（保證至少一組有效解）
+  return [[0,0],[1,2],[2,4],[3,6],[4,1],[5,3],[6,5],[7,7]];
 }
 
-function findValidCells() {
-  const valid = [];
+// 根據貓位置生成顏色區域（每個色區恰好包含一隻貓， colours 連成區域）
+function generateColorGrid(catPositions) {
+  // 初始化 grid
+  let grid = Array.from({ length: GRID }, () => Array(GRID).fill(-1));
+  
+  // 分配顏色給貓（0-7）
+  let catColorAssignments = {};
+  for (let i = 0; i < catPositions.length; i++) {
+    let [r, c] = catPositions[i];
+    let colorIdx = i % COLORS.length;
+    grid[r][c] = colorIdx;
+    catColorMap[key(r, c)] = colorIdx;
+  }
+  
+  // BFS 擴展：由貓位置開始擴散，將空格分配給 nearby 嘅貓色區
+  let queue = [];
   for (let r = 0; r < GRID; r++) {
     for (let c = 0; c < GRID; c++) {
-      if (grid[r][c] === null && isValidPlacement(r, c)) {
-        valid.push([r, c]);
+      if (grid[r][c] !== -1) queue.push([r, c]);
+    }
+  }
+  
+  // 重新洗順序，避免某隻貓先擴展而霸佔太多
+  for (let i = queue.length - 1; i > 0; i--) {
+    let j = Math.floor(Math.random() * (i + 1));
+    [queue[i], queue[j]] = [queue[j], queue[i]];
+  }
+  
+  let head = 0;
+  while (head < queue.length) {
+    let [r, c] = queue[head++];
+    let color = grid[r][c];
+    // 4 方向擴展（保持區域連通性）
+    for (let [dr, dc] of [[-1,0],[1,0],[0,-1],[0,1]]) {
+      let nr = r + dr, nc = c + dc;
+      if (nr >= 0 && nr < GRID && nc >= 0 && nc < GRID && grid[nr][nc] === -1) {
+        grid[nr][nc] = color;
+        queue.push([nr, nc]);
       }
     }
   }
-  return valid;
+  
+  return grid;
 }
 
+// 初始化遊戲
+function initGame() {
+  catPositions = generateValidCats();
+  catColorMap = {};
+  colorGrid = generateColorGrid(catPositions);
+  foundPositions = [];
+  hearts = MAX_HEARTS;
+  selectedCell = null;
+  gameOver = false;
+  moveCount = 0;
+  winOverlay.classList.remove('show');
+  loseOverlay.classList.remove('show');
+  renderBoard();
+  renderHearts();
+  updateFoundCount();
+  confirmBtn.disabled = true;
+}
+
+// ── Render ──
 function renderBoard() {
   boardEl.innerHTML = '';
   for (let r = 0; r < GRID; r++) {
@@ -455,204 +489,198 @@ function renderBoard() {
       cell.className = 'cell';
       cell.dataset.r = r;
       cell.dataset.c = c;
-
-      const cat = grid[r][c];
-      if (cat !== null) {
-        const color = COLORS[cat];
-        cell.classList.add('has-cat', color.bgClass);
-        cell.innerHTML = `<span class="cat-emoji">${CAT_EMOJI}</span>`;
+      
+      const colorIdx = colorGrid[r][c];
+      if (colorIdx !== undefined && colorIdx >= 0) {
+        cell.style.background = COLORS[colorIdx].bg;
       }
-
+      
+      const isFound = foundPositions.some(p => p[0] === r && p[1] === c);
+      const isCat = catPositions.some(p => p[0] === r && p[1] === c);
+      const isSelected = selectedCell && selectedCell.r === r && selectedCell.c === c;
+      
+      if (isFound) {
+        cell.classList.add('has-cat');
+        cell.innerHTML = `<span class="cat-emoji">${CAT_EMOJI}</span>`;
+        cell.style.background = COLORS[catColorMap[key(r,c)]].hex;
+        cell.style.cursor = 'default';
+      } else if (gameOver) {
+        cell.style.cursor = 'default';
+        // 顯示揾過但錯誤嘅格（如果有）
+      }
+      
+      if (isSelected && !isFound) {
+        cell.classList.add('selected');
+      }
+      
+      // 之前錯誤探測過嘅格（暫時保留標記）
+      // 我們用一個独立集合追蹤錯誤格
       cell.addEventListener('click', () => onCellClick(r, c));
       boardEl.appendChild(cell);
     }
   }
-  updateCounts();
+  // 劃掉錯誤格（keep track 用 set，再 render 一次標記）
+  renderWrongGuesses();
 }
 
-function renderPalette() {
-  paletteEl.innerHTML = '';
-  COLORS.forEach((color, idx) => {
-    const opt = document.createElement('div');
-    opt.className = 'cat-option';
-    if (idx === selectedIdx) opt.classList.add('selected');
-    const isUsed = grid.some(row => row.some(cell => cell === idx));
-    if (isUsed) opt.classList.add('used');
+// 追蹤錯誤格（避免每次 render 都抹殺）
+let wrongGuesses = [];
 
-    opt.style.background = color.hex;
-    opt.innerHTML = `
-      <span style="position:relative;z-index:1;">${CAT_EMOJI}</span>
-      <span class="color-dot" style="background:${color.hex}"></span>
-    `;
-
-    opt.title = `${color.name} 貓咪`;
-    opt.addEventListener('click', () => {
-      if (gameOver) return;
-      const isUsed = grid.some(row => row.some(cell => cell === idx));
-      if (!isUsed) {
-        selectedIdx = idx;
-        renderPalette();
-        clearHints();
+function renderWrongGuesses() {
+  const cells = boardEl.querySelectorAll('.cell');
+  cells.forEach(cell => {
+    const r = +cell.dataset.r;
+    const c = +cell.dataset.c;
+    const isWrong = wrongGuesses.some(w => w.r === r && w.c === c);
+    if (isWrong && !foundPositions.some(p => p[0] === r && p[1] === c)) {
+      cell.classList.add('wrong');
+      if (!cell.querySelector('.cat-emoji')) {
+        cell.innerHTML = `<span style="font-size:1.1rem;opacity:0.7">✖</span>`;
       }
-    });
-    paletteEl.appendChild(opt);
+    }
   });
 }
 
-function updateCounts() {
-  placedCount = grid.flat().filter(c => c !== null).length;
-  placedCountEl.textContent = placedCount;
-  placedCountEl.className = 'count ' + (placedCount === 8 ? 'green' : 'orange');
-}
-
-function updateHearts() {
+function renderHearts() {
   heartsEl.innerHTML = '';
-  for (let i = 0; i < 3; i++) {
-    const heart = document.createElement('span');
-    heart.className = 'heart' + (i >= hearts ? ' lost' : '');
-    heart.textContent = '❤️';
-    heartsEl.appendChild(heart);
+  for (let i = 0; i < MAX_HEARTS; i++) {
+    const h = document.createElement('span');
+    h.className = 'heart' + (i >= hearts ? ' lost' : '');
+    h.textContent = '❤️';
+    heartsEl.appendChild(h);
   }
 }
 
+function updateFoundCount() {
+  foundCountEl.textContent = foundPositions.length;
+  foundCountEl.className = 'count' + (foundPositions.length === TOTAL_CATS ? ' green' : '');
+}
+
+// ── Interaction ──
 function onCellClick(r, c) {
   if (gameOver) return;
-
-  const existing = grid[r][c];
-
-  if (existing !== null) {
-    const catIdx = existing;
-    grid[r][c] = null;
-    history.push({ type: 'remove', r, c, catIdx });
-    moves++;
+  
+  const isFound = foundPositions.some(p => p[0] === r && p[1] === c);
+  if (isFound) return; // 已揾到嘅格唔得再點
+  
+  if (!selectedCell) {
+    // 第一次點：揀選
+    selectedCell = { r, c };
+    confirmBtn.disabled = false;
     renderBoard();
-    renderPalette();
-    clearHints();
-    checkVictory();
     return;
   }
+  
+  if (selectedCell.r === r && selectedCell.c === c) {
+    // 同一格第二次點：確認探測
+    probeCell(r, c);
+  } else {
+    // 換一格揀選
+    selectedCell = { r, c };
+    confirmBtn.disabled = false;
+    renderBoard();
+  }
+}
 
-  if (!isValidPlacement(r, c)) {
+function probeCell(r, c) {
+  if (gameOver) return;
+  if (foundPositions.some(p => p[0] === r && p[1] === c)) return;
+  
+  moveCount++;
+  const isCat = catPositions.some(p => p[0] === r && p[1] === c);
+  
+  if (isCat) {
+    // 正確！
+    foundPositions.push([r, c]);
+    selectedCell = null;
+    confirmBtn.disabled = true;
+    renderBoard();
+    updateFoundCount();
+    
+    // 動畫提示已揾到
     const cellEl = boardEl.querySelector(`[data-r="${r}"][data-c="${c}"]`);
     if (cellEl) {
-      cellEl.classList.add('invalid');
-      setTimeout(() => cellEl.classList.remove('invalid'), 500);
+      cellEl.classList.add('has-cat');
     }
-    hearts = Math.max(0, hearts - 1);
-    updateHearts();
-    if (hearts === 0) {
+    
+    // 檢查勝利
+    if (foundPositions.length === TOTAL_CATS) {
       gameOver = true;
-      showGameOver();
+      setTimeout(() => {
+        winOverlay.classList.add('show');
+      }, 350);
     }
-    return;
+  } else {
+    // 錯誤！
+    hearts--;
+    wrongGuesses.push({ r, c });
+    renderHearts();
+    renderBoard();
+    
+    if (hearts <= 0) {
+      gameOver = true;
+      confirmBtn.disabled = true;
+      selectedCell = null;
+      setTimeout(() => {
+        loseOverlay.classList.add('show');
+      }, 400);
+    }
   }
-
-  grid[r][c] = selectedIdx;
-  history.push({ type: 'place', r, c, catIdx: selectedIdx });
-  moves++;
-  renderBoard();
-  renderPalette();
-  clearHints();
-  checkVictory();
 }
 
-function checkVictory() {
-  if (placedCount === 8) {
-    gameOver = true;
-    setTimeout(() => showVictory(), 400);
+function confirmSelection() {
+  if (!selectedCell || gameOver) return;
+  probeCell(selectedCell.r, selectedCell.c);
+}
+
+// 提示：顯示一個未揾到嘅貓位置
+function useHint() {
+  if (gameOver) return;
+  const unfound = catPositions.filter(p => !foundPositions.some(f => f[0] === p[0] && f[1] === p[1]));
+  if (unfound.length === 0) return;
+  
+  const target = unfound[Math.floor(Math.random() * unfound.length)];
+  const [r, c] = target;
+  
+  // 高亮提示 1.2 秒，然後永久顯示貓
+  const cellEl = boardEl.querySelector(`[data-r="${r}"][data-c="${c}"]`);
+  if (cellEl) {
+    cellEl.classList.add('revealed-hint');
+    setTimeout(() => {
+      if (!foundPositions.some(p => p[0] === r && p[1] === c)) {
+        foundPositions.push([r, c]);
+        renderBoard();
+        updateFoundCount();
+        if (foundPositions.length === TOTAL_CATS) {
+          gameOver = true;
+          setTimeout(() => winOverlay.classList.add('show'), 350);
+        }
+      }
+    }, 1200);
   }
 }
 
-function showVictory() {
-  overlayEl.querySelector('.big-emoji').textContent = '🎉';
-  overlayEl.querySelector('h2').textContent = '全嵌哂！';
-  overlayEl.querySelector('p').textContent =
-    `你用咗 ${moves} 次，成功放咗 8 隻貓！`;
-  overlayEl.classList.add('show');
-}
-
-function showGameOver() {
-  overlayEl.querySelector('.big-emoji').textContent = '😿';
-  overlayEl.querySelector('h2').textContent = '心機光咗...';
-  overlayEl.querySelector('p').textContent =
-    `只能放 ${placedCount} 隻貓，心機用晒。再試一次！`;
-  overlayEl.classList.add('show');
-}
-
-function undo() {
-  if (history.length === 0 || gameOver) return;
-  const last = history.pop();
-  if (last.type === 'place') {
-    grid[last.r][last.c] = null;
-  } else if (last.type === 'remove') {
-    grid[last.r][last.c] = last.catIdx;
-  }
-  moves++;
-  renderBoard();
-  renderPalette();
-  clearHints();
-}
-
+// ── Reset ──
 function resetGame() {
-  grid = Array.from({ length: GRID }, () => Array(GRID).fill(null));
-  selectedIdx = 0;
-  history = [];
-  moves = 0;
-  hearts = 3;
-  gameOver = false;
-  overlayEl.classList.remove('show');
-  renderBoard();
-  renderPalette();
-  updateHearts();
+  initGame();
 }
 
-let hintCells = [];
-
-function showHints() {
-  clearHints();
-  const valid = findValidCells();
-  hintCells = valid;
-  valid.forEach(([r, c]) => {
-    const cellEl = boardEl.querySelector(`[data-r="${r}"][data-c="${c}"]`);
-    if (cellEl) cellEl.classList.add('valid-hint');
-  });
-}
-
-function clearHints() {
-  hintCells.forEach(([r, c]) => {
-    const cellEl = boardEl.querySelector(`[data-r="${r}"][data-c="${c}"]`);
-    if (cellEl) cellEl.classList.remove('valid-hint');
-  });
-  hintCells = [];
-}
-
-undoBtn.addEventListener('click', undo);
+// ── Event Listeners ──
+confirmBtn.addEventListener('click', confirmSelection);
 resetBtn.addEventListener('click', resetGame);
-hintBtn.addEventListener('click', showHints);
-playAgainBtn.addEventListener('click', resetGame);
+hintBtn.addEventListener('click', useHint);
+document.getElementById('playAgainWinBtn').addEventListener('click', resetGame);
+document.getElementById('playAgainLoseBtn').addEventListener('click', resetGame);
 
-renderBoard();
-renderPalette();
-updateHearts();
-
-function autoSelectCat() {
-  for (let i = 0; i < COLORS.length; i++) {
-    const used = grid.some(row => row.some(cell => cell === i));
-    if (!used) {
-      selectedIdx = i;
-      renderPalette();
-      break;
-    }
+// 鍵盤支持：Enter 確認
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter' && !confirmBtn.disabled && !gameOver) {
+    confirmSelection();
   }
-}
+});
 
-const origRenderBoard = renderBoard;
-renderBoard = function() {
-  origRenderBoard();
-  autoSelectCat();
-};
-
-renderBoard();
+// ── Start ──
+initGame();
 </script>
 </body>
 </html>
