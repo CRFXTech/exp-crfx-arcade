@@ -73,11 +73,16 @@ def main():
     ts = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
 
     assets = {
-        "金 (GC=F)":        ("GC=F",   "金 — XAU/USD 期貨"),
-        "美元指數 (DXY)":   ("DX-Y.NYB", "美元指數"),
-        "S&P 500 (SPY)":   ("SPY",    "美股基準"),
-        "NASDAQ 100 (QQQ)":("QQQ",    "科技主導指數"),
-        "10年期美債 (^TNX)":("^TNX",  "長期利率（%）"),
+        "金期貨 (GC=F)":       ("GC=F",     "金 — XAU/USD 期貨"),
+        "金ETF (GLD)":         ("GLD",     "金上場基金"),
+        "銀期貨 (SLV)":        ("SLV",     "銀 — XAG/USD"),
+        "美元指數 (DXY)":      ("DX-Y.NYB","美元指數"),
+        "S&P 500 (SPY)":       ("SPY",     "美股基準"),
+        "NASDAQ 100 (QQQ)":    ("QQQ",     "科技主導指數"),
+        "10年期美債 (^TNX)":   ("^TNX",    "長期利率（%）"),
+        "長期美債 ETF (TLT)":  ("TLT",     "長期美債 ETF"),
+        "比特幣 (BTC-USD)":    ("BTC-USD", "比特幣美金價"),
+        "VIX 恐慌指數 (^VIX)": ("^VIX",    "股市波動率指數"),
     }
 
     out = [f"# 宏觀一覽 — {ts}", ""]
@@ -93,7 +98,7 @@ def main():
         data[label] = {"sym": sym, "desc": desc, "closes": closes}
 
     # 金 & 美元要喺度先算背馺
-    gold = data.get("金 (GC=F)")
+    gold = data.get("金期貨 (GC=F)")
     dollar = data.get("美元指數 (DXY)")
 
     if gold and dollar:
