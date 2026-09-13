@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>投資資訊 | CRFX</title>
+<title>投資策略信息 | CRFX</title>
 <style>
   :root {
     --bg: #0d1117;
@@ -14,6 +14,7 @@
     --border: #30363d;
     --warn: #f0883e;
     --good: #3fb950;
+    --tag-bg: rgba(88,166,255,0.12);
   }
   * { box-sizing: border-box; }
   body {
@@ -24,7 +25,7 @@
     padding: 1.5rem;
     line-height: 1.6;
   }
-  .container { max-width: 900px; margin: 0 auto; }
+  .container { max-width: 1100px; margin: 0 auto; }
   header {
     display: flex;
     justify-content: space-between;
@@ -36,7 +37,7 @@
   h1 { font-size: 1.5rem; margin: 0; font-weight: 600; }
   .subtitle { color: var(--muted); font-size: 0.9rem; margin-top: 0.25rem; }
   .header-right { display: flex; gap: 0.75rem; align-items: center; }
-  .last-updated {
+  .header-info {
     color: var(--muted);
     font-size: 0.8rem;
     background: var(--card);
@@ -44,7 +45,7 @@
     border-radius: 6px;
     border: 1px solid var(--border);
   }
-  .refresh-btn {
+  .add-btn {
     background: var(--accent);
     color: #0d1117;
     border: none;
@@ -55,8 +56,7 @@
     cursor: pointer;
     transition: opacity 0.15s;
   }
-  .refresh-btn:hover { opacity: 0.85; }
-  .refresh-btn:disabled { opacity: 0.5; cursor: default; }
+  .add-btn:hover { opacity: 0.85; }
   .card {
     background: var(--card);
     border: 1px solid var(--border);
@@ -69,13 +69,8 @@
     margin: 0 0 0.75rem 0;
     font-size: 1.05rem;
     font-weight: 600;
-    color: var(--fg);
   }
-  .card .desc {
-    color: var(--muted);
-    font-size: 0.85rem;
-    margin: 0 0 0.75rem 0;
-  }
+  .card .desc { color: var(--muted); font-size: 0.85rem; margin: 0 0 0.75rem 0; }
   table {
     width: 100%;
     border-collapse: collapse;
@@ -83,8 +78,9 @@
   }
   th, td {
     text-align: left;
-    padding: 0.5rem 0.6rem;
+    padding: 0.55rem 0.6rem;
     border-bottom: 1px solid var(--border);
+    vertical-align: top;
   }
   th {
     color: var(--muted);
@@ -92,34 +88,118 @@
     font-size: 0.8rem;
     text-transform: uppercase;
     letter-spacing: 0.03em;
+    background: rgba(139,148,158,0.05);
   }
-  td { vertical-align: top; }
   tr:last-child td { border-bottom: none; }
-  .signal { color: var(--accent); }
-  .warn { color: var(--warn); font-weight: 500; }
-  .good { color: var(--good); }
   .tag {
     display: inline-block;
     font-size: 0.75rem;
     padding: 0.15rem 0.5rem;
     border-radius: 999px;
-    background: rgba(88,166,255,0.12);
+    background: var(--tag-bg);
     color: var(--accent);
-    margin-right: 0.4rem;
+    margin-right: 0.35rem;
+    margin-bottom: 0.2rem;
   }
-  .tag.warn { background: rgba(240,136,62,0.12); color: var(--warn); }
-  .tag.good { background: rgba(63,185,80,0.12); color: var(--good); }
-  ul { margin: 0.5rem 0; padding-left: 1.2rem; }
-  li { margin-bottom: 0.25rem; }
-  .section-note {
+  .tag.neutral { background: rgba(139,148,158,0.15); color: var(--muted); }
+  .tag.active { background: rgba(63,185,80,0.12); color: var(--good); }
+  .tag.draft { background: rgba(240,136,62,0.12); color: var(--warn); }
+  .score {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.2rem;
+    font-size: 0.9rem;
+  }
+  .score-dot {
+    width: 0.6rem;
+    height: 0.6rem;
+    border-radius: 50%;
+    display: inline-block;
+  }
+  .score-dot.on { background: var(--good); }
+  .score-dot.off { background: var(--border); }
+  .modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(13,17,23,0.85);
+    z-index: 100;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+  }
+  .modal.open { display: flex; }
+  .modal-content {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    max-width: 700px;
+    width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+    padding: 1.5rem;
+    position: relative;
+  }
+  .modal-content h3 { margin-top: 0; }
+  .modal-close {
+    position: absolute;
+    top: 0.75rem;
+    right: 0.75rem;
+    background: transparent;
+    border: 1px solid var(--border);
     color: var(--muted);
-    font-size: 0.85rem;
-    background: rgba(139,148,158,0.08);
-    border-left: 3px solid var(--accent);
-    padding: 0.6rem 0.9rem;
-    margin: 0.75rem 0;
-    border-radius: 0 6px 6px 0;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 6px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
   }
+  .modal-close:hover { color: var(--fg); background: rgba(139,148,158,0.1); }
+  .section-label {
+    color: var(--muted);
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin: 1rem 0 0.3rem 0;
+    font-weight: 600;
+  }
+  .pipeline {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+  .pipeline-step {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    background: rgba(139,148,158,0.05);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .pipeline-step:hover { background: rgba(139,148,158,0.1); }
+  .pipeline-step.active { background: rgba(88,166,255,0.1); border-color: var(--accent); }
+  .pipeline-step .icon {
+    width: 2rem;
+    height: 2rem;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    flex-shrink: 0;
+    background: var(--card);
+    border: 1px solid var(--border);
+  }
+  .pipeline-step.active .icon { background: var(--accent); color: #0d1117; border-color: var(--accent); }
+  .pipeline-step .body { flex: 1; }
+  .pipeline-step .title { font-weight: 600; font-size: 0.95rem; }
+  .pipeline-step .detail { color: var(--muted); font-size: 0.82rem; margin-top: 0.15rem; }
   .footer {
     margin-top: 2rem;
     padding-top: 1rem;
@@ -128,12 +208,6 @@
     font-size: 0.8rem;
     text-align: center;
   }
-  .loading {
-    color: var(--muted);
-    font-size: 0.9rem;
-    padding: 0.5rem 0;
-  }
-  .error { color: var(--warn); }
   code {
     background: rgba(139,148,158,0.12);
     padding: 0.1rem 0.3rem;
@@ -141,10 +215,44 @@
     font-size: 0.85em;
     color: var(--accent);
   }
-  @media (max-width: 600px) {
+  .tools {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+  }
+  .tool-chip {
+    background: rgba(139,148,158,0.08);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 0.4rem 0.7rem;
+    font-size: 0.82rem;
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+  .tool-chip .emoji { font-size: 1rem; }
+  .empty-state {
+    text-align: center;
+    padding: 2rem 1rem;
+    color: var(--muted);
+  }
+  .empty-state .emoji { font-size: 2.5rem; display: block; margin-bottom: 0.5rem; }
+  .hint {
+    color: var(--muted);
+    font-size: 0.85rem;
+    background: rgba(139,148,158,0.08);
+    border-left: 3px solid var(--accent);
+    padding: 0.6rem 0.9rem;
+    margin: 0.75rem 0;
+    border-radius: 0 6px 6px 0;
+  }
+  @media (max-width: 700px) {
     body { padding: 1rem; }
     table { font-size: 0.8rem; }
-    th, td { padding: 0.35rem 0.4rem; }
+    th, td { padding: 0.4rem 0.4rem; }
+    .modal-content { padding: 1rem; }
   }
 </style>
 </head>
@@ -152,144 +260,327 @@
 <div class="container">
   <header>
     <div>
-      <h1>📊 投資資訊</h1>
-      <div class="subtitle">宏觀一覽 · 金美元背離 · 季節性提醒 · 每日更新</div>
+      <h1>📋 投資策略信息</h1>
+      <div class="subtitle">策略選集 · 重點提取 · 做選擇參考</div>
     </div>
     <div class="header-right">
-      <span class="last-updated" id="lastUpdated">載入中…</span>
-      <button class="refresh-btn" id="refreshBtn" onclick="loadReport()">刷新報告</button>
+      <span class="header-info">策略狀態追踪</span>
     </div>
   </header>
 
-  <div id="content">
-    <div class="card">
-      <p class="loading">📡 載入最新宏觀報告…</p>
+  <!-- Pipeline 工作流 -->
+  <div class="card" style="margin-bottom:1.5rem;">
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.5rem;">
+      <div style="color:var(--muted);font-size:0.85rem;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;">工作流</div>
+      <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
+        <button class="add-btn" onclick="showAddModal()">＋ 新增策略</button>
+        <button class="add-btn" style="background:transparent;color:var(--muted);border:1px solid var(--border);" onclick="showHint()">💡 怎麼用</button>
+      </div>
+    </div>
+    <div class="pipeline" style="margin-top:0.75rem;">
+      <div class="pipeline-step active">
+        <div class="icon">📥</div>
+        <div class="body">
+          <div class="title">1. 收集視頻</div>
+          <div class="detail">提供 YouTube 視頻連結、內容簡介</div>
+        </div>
+      </div>
+      <div class="pipeline-step" id="step2">
+        <div class="icon">🔍</div>
+        <div class="body">
+          <div class="title">2. 提取重點</div>
+          <div class="detail">分析重點條件、入場／出場邏輯、風險因子</div>
+        </div>
+      </div>
+      <div class="pipeline-step" id="step3">
+        <div class="icon">📝</div>
+        <div class="body">
+          <div class="title">3. 編入策略庫</div>
+          <div class="detail">放入策略表格，標注狀態、評分、類型</div>
+        </div>
+      </div>
+      <div class="pipeline-step" id="step4">
+        <div class="icon">📊</div>
+        <div class="body">
+          <div class="title">4. 參考決策</div>
+          <div class="detail">查看策略卡，做選擇參考</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 策略表格 -->
+  <div class="card">
+    <h3>策略選集</h3>
+    <div class="desc">目前收錄策略，包含來源、類型、核心邏輯、狀態，點擊展開詳情。</div>
+    <div id="strategies-container">
+      <!-- JS 會動態 render -->
+      <div class="empty-state" id="empty-state">
+        <span class="emoji">📭</span>
+        <p>目前無策略，點擊上方「＋ 新增策略」開始加入第一條。</p>
+      </div>
+      <table id="strategies-table" style="display:none;">
+        <thead>
+          <tr>
+            <th style="width:22%;">策略名稱</th>
+            <th style="width:12%;">類型</th>
+            <th style="width:13%;">狀態</th>
+            <th style="width:8%;">評分</th>
+            <th style="width:45%;">核心邏輯（簡述）</th>
+          </tr>
+        </thead>
+        <tbody id="strategies-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- 工具 / 連結 -->
+  <div class="card">
+    <h3>🔗 工具與資源</h3>
+    <div class="desc">投資研究常用工具，方便快速跳轉。</div>
+    <div class="tools">
+      <span class="tool-chip"><span class="emoji">▶️</span> YouTube 視頻提取</span>
+      <span class="tool-chip"><span class="emoji">📊</span> 宏觀數據查詢</span>
+      <span class="tool-chip"><span class="emoji">📈</span> 技術分析工具</span>
+      <span class="tool-chip"><span class="emoji">💬</span> 投資討論社區</span>
+    </div>
+    <div class="hint" style="margin-top:1rem;">
+      目前工具尚在建設中。如有特定需求（例如某類數據來源、分析工具），可告知我加進去。
+    </div>
+  </div>
+
+  <!-- 新增策略 Modal -->
+  <div class="modal" id="addModal">
+    <div class="modal-content">
+      <button class="modal-close" onclick="closeAddModal()">✕</button>
+      <h3>新增策略</h3>
+      <p class="desc" style="margin-top:0;">輸入策略基本信息，我會幫你整理進策略庫。</p>
+
+      <div class="section-label">基本信息</div>
+      <div style="display:grid;gap:0.6rem;">
+        <input id="f-name" placeholder="策略名稱（例如：均值回歸突破策略）" style="background:rgba(139,148,158,0.08);border:1px solid var(--border);border-radius:6px;padding:0.6rem 0.8rem;color:var(--fg);font-size:0.9rem;width:100%;">
+        <div style="display:flex;gap:0.5rem;">
+          <input id="f-source" placeholder="來源（例如：YouTube 頻道 A / 書籍 B）" style="background:rgba(139,148,158,0.08);border:1px solid var(--border);border-radius:6px;padding:0.6rem 0.8rem;color:var(--fg);font-size:0.9rem;flex:1;">
+          <select id="f-type" style="background:rgba(139,148,158,0.08);border:1px solid var(--border);border-radius:6px;padding:0.6rem 0.8rem;color:var(--fg);font-size:0.9rem;">
+            <option value="">類型...</option>
+            <option>均值回歸</option>
+            <option>趨勢追踪</option>
+            <option>動量</option>
+            <option>套利</option>
+            <option>長期投資</option>
+            <option>其他</option>
+          </select>
+        </div>
+        <textarea id="f-core" placeholder="核心邏輯（簡述策略原理，一兩句）" style="background:rgba(139,148,158,0.08);border:1px solid var(--border);border-radius:6px;padding:0.6rem 0.8rem;color:var(--fg);font-size:0.9rem;width:100%;min-height:4rem;resize:vertical;"></textarea>
+      </div>
+
+      <div class="section-label" style="margin-top:1rem;">進階（可選）</div>
+      <div style="display:grid;gap:0.6rem;">
+        <textarea id="f-entry" placeholder="入場條件（例如：突破 20 日高點 + RSI &lt; 70）" style="background:rgba(139,148,158,0.08);border:1px solid var(--border);border-radius:6px;padding:0.6rem 0.8rem;color:var(--fg);font-size:0.9rem;width:100%;min-height:3.5rem;resize:vertical;"></textarea>
+        <textarea id="f-exit" placeholder="出場條件（例如：跌破 10 日低點 / ATR 停止손실）" style="background:rgba(139,148,158,0.08);border:1px solid var(--border);border-radius:6px;padding:0.6rem 0.8rem;color:var(--fg);font-size:0.9rem;width:100%;min-height:3.5rem;resize:vertical;"></textarea>
+        <textarea id="f-video" placeholder="YouTube 視頻連結（如果有）" style="background:rgba(139,148,158,0.08);border:1px solid var(--border);border-radius:6px;padding:0.6rem 0.8rem;color:var(--fg);font-size:0.9rem;width:100%;min-height:2.5rem;resize:vertical;"></textarea>
+        <textarea id="f-note" placeholder="備註（例如：適合資產、風險提示、參考標籤）" style="background:rgba(139,148,158,0.08);border:1px solid var(--border);border-radius:6px;padding:0.6rem 0.8rem;color:var(--fg);font-size:0.9rem;width:100%;min-height:2.5rem;resize:vertical;"></textarea>
+      </div>
+
+      <div style="display:flex;gap:0.5rem;margin-top:1.25rem;">
+        <button class="add-btn" onclick="submitStrategy()" style="flex:1;">加入策略庫</button>
+        <button class="add-btn" style="background:transparent;color:var(--muted);border:1px solid var(--border);flex:0 0 auto;" onclick="closeAddModal()">取消</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 策略詳情 Modal -->
+  <div class="modal" id="detailModal">
+    <div class="modal-content">
+      <button class="modal-close" onclick="closeDetailModal()">✕</button>
+      <h3 id="detail-title">策略詳情</h3>
+      <div id="detail-body"></div>
     </div>
   </div>
 
   <div class="footer">
-    <p>數據來源：Yahoo Finance（通過 <code>yfinance</code>） · 產生時間見報告底部 · 仅供參考，唔係投資建議。執行由 Samuel 決定。</p>
+    <p>投資策略信息頁面 · 僅供參考，唔係投資建議 · 執行決定由 Samuel 自己做</p>
   </div>
 </div>
 
 <script>
-  const contentEl = document.getElementById('content');
-  const lastUpdatedEl = document.getElementById('lastUpdated');
-  const refreshBtn = document.getElementById('refreshBtn');
-  let loading = false;
+  // 內容數據 — 初始空，之後有示例再加
+  let strategies = [];
+  let detailStrategyId = null;
 
-  async function loadReport() {
-    if (loading) return;
-    loading = true;
-    refreshBtn.disabled = true;
-    refreshBtn.textContent = '載入中…';
-    contentEl.innerHTML = '<div class="card"><p class="loading">📡 載入中…</p></div>';
+  const STATUS_MAP = {
+    'draft':    { label: '草稿',   cls: 'draft' },
+    'active':   { label: '活躍',   cls: 'active' },
+    'watching': { label: '觀察',   cls: 'neutral' },
+    'rejected': { label: '已棄',   cls: 'neutral' },
+  };
 
-    try {
-      const res = await fetch('macro-report.md');
-      if (!res.ok) throw new Error('HTTP ' + res.status);
-      const md = await res.text();
-      contentEl.innerHTML = renderMarkdown(md);
+  const TYPE_MAP = {
+    '均值回歸':   '均值回歸',
+    '趨勢追踪':   '趨勢追踪',
+    '動量':       '動量',
+    '套利':       '套利',
+    '長期投資':   '長期投資',
+    '其他':       '其他',
+  };
 
-      // 抽取產生時間
-      const match = md.match(/_產生時間：(.+?)_/);
-      if (match) {
-        lastUpdatedEl.textContent = '最後更新 ' + match[1];
-      } else {
-        lastUpdatedEl.textContent = '報告已載入';
-      }
-    } catch (e) {
-      contentEl.innerHTML = `
-        <div class="card">
-          <p class="error">⚠️ 冇法加載報告：${e.message}</p>
-          <p style="margin-top:0.5rem;color:var(--muted);font-size:0.85rem;">
-            可能原因：① <code>macro-report.md</code> 未推送至倉庫　② 網路問題　③ 報告 file 放錯位置。
-          </p>
-          <p style="margin-top:0.5rem;color:var(--muted);font-size:0.85rem;">
-            請確認 <code>invest/macro-report.md</code> 存在於 repo 根目錄，然後推送。
-          </p>
-        </div>`;
-      lastUpdatedEl.textContent = '載入失敗';
-    } finally {
-      loading = false;
-      refreshBtn.disabled = false;
-      refreshBtn.textContent = '刷新報告';
+  function scoreDots(rating) {
+    const n = Math.min(5, Math.max(0, rating || 0));
+    let html = '<span class="score">';
+    for (let i = 1; i <= 5; i++) {
+      html += `<span class="score-dot ${i <= n ? 'on' : 'off'}"></span>`;
     }
-  }
-
-  function renderMarkdown(md) {
-    let html = md
-      .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
-      .replace(/\r\n/g, '\n');
-
-    // 標題
-    html = html
-      .replace(/^### (.+)$/gm, '<div class="card"><h3>$1</h3></div>')
-      .replace(/^## (.+)$/gm, '<h3>$1</h3>')
-      .replace(/^# (.+)$/gm, '<h2 style="margin:0 0 0.5rem 0;">$1</h2>');
-
-    // 粗體 / 斜體
-    html = html
-      .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-      .replace(/__(.+?)__/g, '<strong>$1</strong>')
-      .replace(/\*(.+?)\*/g, '<em>$1</em>')
-      .replace(/_(.+?)_/g, '<em>$1</em>');
-
-    // 清單：以 - / • 開頭
-    html = html.replace(/^[\s]*[-•] (.+)$/gm, '<li>$1</li>');
-    html = html.replace(/(<li>.*<\/li>(\s*<li>.*<\/li>)*)/gs, '<ul>$1</ul>');
-
-    // 表格
-    html = html.replace(/(\|.*\|\n\|[-| :\n]+\|\n(?:\|.*\|\n)*)/g, tableToHtml);
-
-    // 空行 → 段落分隔
-    html = html.replace(/\n{2,}/g, '</p><p>');
-    html = '<p>' + html + '</p>';
-    html = html.replace(/<p><\/p>/g, '');
-    html = html.replace(/<p>(<h[23]>)/g, '$1');
-    html = html.replace(/(<\/h[23]>)<\/p&gt;/g, '$1');
-    html = html.replace(/<p>(<div class="card">)/g, '$1');
-    html = html.replace(/(<\/div>)<\/p&gt;/g, '$1');
-    html = html.replace(/<p>(<ul>)/g, '$1');
-    html = html.replace(/(<\/ul>)<\/p&gt;/g, '$1');
-    html = html.replace(/<p>(<li>)/g, '$1');
-    html = html.replace(/(<\/li>)<\/p&gt;/g, '$1');
-
-    // 清理多餘空白
-    html = html.replace(/<p>\s*<\/p>/g, '');
-    html = html.replace(/<p>\s*(<h[23]|<div|<ul|<li)/g, '$1');
-    html = html.replace(/(<\/h[23]|<\/div|<\/ul|<\/li)>\s*<\/p&gt;/g, '$1');
-
+    html += ` ${n}/5</span>`;
     return html;
   }
 
-  function tableToHtml(match) {
-    const lines = match.trim().split('\n').map(l => l.trim());
-    if (lines.length < 2) return match;
-    const headerLine = lines[0];
-    const headerCells = headerLine.split('|')
-      .filter((c, i, arr) => i > 0 && i < arr.length - 1 && c.trim() !== '')
-      .map(c => c.trim());
-    if (headerCells.length === 0) return match;
+  function render() {
+    const empty = document.getElementById('empty-state');
+    const table = document.getElementById('strategies-table');
+    const tbody = document.getElementById('strategies-tbody');
 
-    let table = '<table><thead><tr>';
-    headerCells.forEach(h => { table += `<th>${h}</th>`; });
-    table += '</tr></thead><tbody>';
-
-    for (let i = 2; i < lines.length; i++) {
-      const cells = lines[i].split('|')
-        .filter((c, idx, arr) => idx > 0 && idx < arr.length - 1 && c.trim() !== '')
-        .map(c => c.trim());
-      if (cells.length === 0) continue;
-      table += '<tr>';
-      cells.forEach(c => { table += `<td>${c}</td>`; });
-      table += '</tr>';
+    if (!strategies.length) {
+      empty.style.display = 'block';
+      table.style.display = 'none';
+      return;
     }
-    table += '</tbody></table>';
-    return table;
+    empty.style.display = 'none';
+    table.style.display = '';
+    tbody.innerHTML = strategies.map(s => {
+      const st = STATUS_MAP[s.status] || STATUS_MAP['draft'];
+      const type = TYPE_MAP[s.type] || s.type;
+      const core = s.core || '—';
+      const truncated = core.length > 120 ? core.slice(0, 117) + '…' : core;
+      return `<tr>
+        <td><strong>${esc(s.name)}</strong></td>
+        <td><span class="tag neutral">${esc(type)}</span></td>
+        <td><span class="tag ${st.cls}">${esc(st.label)}</span></td>
+        <td>${scoreDots(s.rating)}</td>
+        <td>${esc(truncated)}</td>
+      </tr>`;
+    }).join('');
   }
 
-  document.addEventListener('DOMContentLoaded', loadReport);
+  function esc(s) {
+    return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
+  function showAddModal() {
+    document.getElementById('addModal').classList.add('open');
+  }
+  function closeAddModal() {
+    document.getElementById('addModal').classList.remove('open');
+  }
+  function showHint() {
+    alert(
+      '使用流程：\n\n' +
+      '1. 點擊「新增策略」填寫信息\n' +
+      '2. 提供策略名稱、來源、類型、核心邏輯\n' +
+      '3. （可選）加埋入場／出場條件、YouTube 視頻連結、備註\n' +
+      '4. 提交後策略會出現在表格\n\n' +
+      '你可以提供 YouTube 視頻，我幫你提取重點後填入。\n' +
+      '或者你直接寫好策略信息，我直接加進去。'
+    );
+  }
+
+  function submitStrategy() {
+    const name = document.getElementById('f-name').value.trim();
+    if (!name) {
+      alert('請填寫策略名稱。');
+      return;
+    }
+    const strategy = {
+      id: Date.now().toString(36) + Math.random().toString(36).slice(2,6),
+      name: name,
+      type: document.getElementById('f-type').value || '其他',
+      source: document.getElementById('f-source').value.trim() || '未知',
+      core: document.getElementById('f-core').value.trim() || '—',
+      entry: document.getElementById('f-entry').value.trim() || '',
+      exit: document.getElementById('f-exit').value.trim() || '',
+      video: document.getElementById('f-video').value.trim() || '',
+      note: document.getElementById('f-note').value.trim() || '',
+      rating: 0,
+      status: 'draft',
+    };
+    strategies.push(strategy);
+    render();
+    closeAddModal();
+    // 清空表單
+    document.getElementById('f-name').value = '';
+    document.getElementById('f-source').value = '';
+    document.getElementById('f-type').value = '';
+    document.getElementById('f-core').value = '';
+    document.getElementById('f-entry').value = '';
+    document.getElementById('f-exit').value = '';
+    document.getElementById('f-video').value = '';
+    document.getElementById('f-note').value = '';
+    // 更新工作流
+    updatePipeline();
+    // 彈提示
+    alert(`✅ 策略「${name}」已加入，狀態「草稿」。\n\n你可以提供 YouTube 視頻，我幫你提取重點後再更新。`);
+  }
+
+  function openDetail(id) {
+    const s = strategies.find(x => x.id === id);
+    if (!s) return;
+    detailStrategyId = id;
+    const st = STATUS_MAP[s.status] || STATUS_MAP['draft'];
+    const type = TYPE_MAP[s.type] || s.type;
+    const body = document.getElementById('detail-body');
+    body.innerHTML = `
+      <table style="margin-bottom:1rem;">
+        <tr><td style="width:20%;"><strong>名稱</strong></td><td>${esc(s.name)}</td></tr>
+        <tr><td><strong>類型</strong></td><td><span class="tag neutral">${esc(type)}</span></td></tr>
+        <tr><td><strong>來源</strong></td><td>${esc(s.source)}</td></tr>
+        <tr><td><strong>狀態</strong></td><td><span class="tag ${st.cls}">${esc(st.label)}</span></td></tr>
+        <tr><td><strong>評分</strong></td><td>${scoreDots(s.rating)}</td></tr>
+      </table>
+
+      <div class="section-label">核心邏輯</div>
+      <p style="margin:0 0 1rem 0;">${esc(s.core)}</p>
+
+      ${s.entry ? `<div class="section-label">入場條件</div><p style="margin:0 0 1rem 0;">${esc(s.entry)}</p>` : ''}
+      ${s.exit  ? `<div class="section-label">出場條件</div><p style="margin:0 0 1rem 0;">${esc(s.exit)}</p>` : ''}
+      ${s.video ? `<div class="section-label">來源視頻</div><a href="${esc(s.video)}" target="_blank" rel="noopener" style="color:var(--accent);">${esc(s.video)} ↗</a>` : ''}
+      ${s.note  ? `<div class="section-label">備註</div><p style="margin:0;">${esc(s.note)}</p>` : ''}
+    `;
+    document.getElementById('detail-title').textContent = s.name;
+    document.getElementById('detailModal').classList.add('open');
+  }
+
+  function closeDetailModal() {
+    document.getElementById('detailModal').classList.remove('open');
+    detailStrategyId = null;
+  }
+
+  document.querySelectorAll('#strategies-tbody tr').forEach(tr => {
+    tr.addEventListener('click', () => {
+      const id = tr.dataset.id;
+      if (id) openDetail(id);
+    });
+  });
+
+  function updatePipeline() {
+    const count = strategies.length;
+    const step2 = document.getElementById('step2');
+    const step3 = document.getElementById('step3');
+    const step4 = document.getElementById('step4');
+    if (count > 0) step2.classList.add('active');
+    if (count > 1) step3.classList.add('active');
+    if (count > 2) step4.classList.add('active');
+  }
+
+  // 點擊 modal 外部關閉
+  window.addEventListener('click', (e) => {
+    if (e.target.id === 'addModal') closeAddModal();
+    if (e.target.id === 'detailModal') closeDetailModal();
+  });
+
+  // 初始化：如果有示例數據就 render
+  document.addEventListener('DOMContentLoaded', () => {
+    // 未來可以從數據文件讀取
+    render();
+  });
 </script>
 </body>
 </html>
