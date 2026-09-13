@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>投資資訊 | CRFX</title>
+<style>
+  :root {
+    --bg: #0d1117;
+    --fg: #e6edf3;
+    --muted: #8b949e;
+    --accent: #58a6ff;
+    --card: #161b22;
+    --border: #30363d;
+    --warn: #f0883e;
+    --good: #3fb950;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--fg);
+    padding: 1.5rem;
+    line-height: 1.6;
+  }
+  .container { max-width: 900px; margin: 0 auto; }
+  header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+  }
+  h1 { font-size: 1.5rem; margin: 0; font-weight: 600; }
+  .subtitle { color: var(--muted); font-size: 0.9rem; margin-top: 0.25rem; }
+  .header-right { display: flex; gap: 0.75rem; align-items: center; }
+  .last-updated {
+    color: var(--muted);
+    font-size: 0.8rem;
+    background: var(--card);
+    padding: 0.35rem 0.7rem;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+  }
+  .refresh-btn {
+    background: var(--accent);
+    color: #0d1117;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: opacity 0.15s;
+  }
+  .refresh-btn:hover { opacity: 0.85; }
+  .refresh-btn:disabled { opacity: 0.5; cursor: default; }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1.25rem;
+    margin-bottom: 1.25rem;
+    page-break-inside: avoid;
+  }
+  .card h3 {
+    margin: 0 0 0.75rem 0;
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: var(--fg);
+  }
+  .card .desc {
+    color: var(--muted);
+    font-size: 0.85rem;
+    margin: 0 0 0.75rem 0;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+  }
+  th, td {
+    text-align: left;
+    padding: 0.5rem 0.6rem;
+    border-bottom: 1px solid var(--border);
+  }
+  th {
+    color: var(--muted);
+    font-weight: 600;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+  }
+  td { vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  .signal { color: var(--accent); }
+  .warn { color: var(--warn); font-weight: 500; }
+  .good { color: var(--good); }
+  .tag {
+    display: inline-block;
+    font-size: 0.75rem;
+    padding: 0.15rem 0.5rem;
+    border-radius: 999px;
+    background: rgba(88,166,255,0.12);
+    color: var(--accent);
+    margin-right: 0.4rem;
+  }
+  .tag.warn { background: rgba(240,136,62,0.12); color: var(--warn); }
+  .tag.good { background: rgba(63,185,80,0.12); color: var(--good); }
+  ul { margin: 0.5rem 0; padding-left: 1.2rem; }
+  li { margin-bottom: 0.25rem; }
+  .section-note {
+    color: var(--muted);
+    font-size: 0.85rem;
+    background: rgba(139,148,158,0.08);
+    border-left: 3px solid var(--accent);
+    padding: 0.6rem 0.9rem;
+    margin: 0.75rem 0;
+    border-radius: 0 6px 6px 0;
+  }
+  .footer {
+    margin-top: 2rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border);
+    color: var(--muted);
+    font-size: 0.8rem;
+    text-align: center;
+  }
+  .loading {
+    color: var(--muted);
+    font-size: 0.9rem;
+    padding: 0.5rem 0;
+  }
+  .error { color: var(--warn); }
+  code {
+    background: rgba(139,148,158,0.12);
+    padding: 0.1rem 0.3rem;
+    border-radius: 4px;
+    font-size: 0.85em;
+    color: var(--accent);
+  }
+  @media (max-width: 600px) {
+    body { padding: 1rem; }
+    table { font-size: 0.8rem; }
+    th, td { padding: 0.35rem 0.4rem; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <div>
+      <h1>📊 投資資訊</h1>
+      <div class="subtitle">宏觀一覽 · 金美元背離 · 季節性提醒 · 每日更新</div>
+    </div>
+    <div class="header-right">
+      <span class="last-updated" id="lastUpdated">載入中…</span>
+      <button class="refresh-btn" id="refreshBtn" onclick="loadReport()">刷新報告</button>
+    </div>
+  </header>
+
+  <div id="content">
+    <div class="card">
+      <p class="loading">📡 載入最新宏觀報告…</p>
+    </div>
+  </div>
+
+  <div class="footer">
+    <p>數據來源：Yahoo Finance（通過 <code>yfinance</code>） · 產生時間見報告底部 · 仅供參考，唔係投資建議。執行由 Samuel 決定。</p>
+  </div>
+</div>
+
+<script>
+  const contentEl = document.getElementById('content');
+  const lastUpdatedEl = document.getElementById('lastUpdated');
+  const refreshBtn = document.getElementById('refreshBtn');
+  let loading = false;
+
+  async function loadReport() {
+    if (loading) return;
+    loading = true;
+    refreshBtn.disabled = true;
+    refreshBtn.textContent = '載入中…';
+    contentEl.innerHTML = '<div class="card"><p class="loading">📡 載入中…</p></div>';
+
+    try {
+      const res = await fetch('macro-report.md');
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const md = await res.text();
+      contentEl.innerHTML = renderMarkdown(md);
+
+      // 抽取產生時間
+      const match = md.match(/_產生時間：(.+?)_/);
+      if (match) {
+        lastUpdatedEl.textContent = '最後更新 ' + match[1];
+      } else {
+        lastUpdatedEl.textContent = '報告已載入';
+      }
+    } catch (e) {
+      contentEl.innerHTML = `
+        <div class="card">
+          <p class="error">⚠️ 冇法加載報告：${e.message}</p>
+          <p style="margin-top:0.5rem;color:var(--muted);font-size:0.85rem;">
+            可能原因：① <code>macro-report.md</code> 未推送至倉庫　② 網路問題　③ 報告 file 放錯位置。
+          </p>
+          <p style="margin-top:0.5rem;color:var(--muted);font-size:0.85rem;">
+            請確認 <code>invest/macro-report.md</code> 存在於 repo 根目錄，然後推送。
+          </p>
+        </div>`;
+      lastUpdatedEl.textContent = '載入失敗';
+    } finally {
+      loading = false;
+      refreshBtn.disabled = false;
+      refreshBtn.textContent = '刷新報告';
+    }
+  }
+
+  function renderMarkdown(md) {
+    let html = md
+      .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+      .replace(/\r\n/g, '\n');
+
+    // 標題
+    html = html
+      .replace(/^### (.+)$/gm, '<div class="card"><h3>$1</h3></div>')
+      .replace(/^## (.+)$/gm, '<h3>$1</h3>')
+      .replace(/^# (.+)$/gm, '<h2 style="margin:0 0 0.5rem 0;">$1</h2>');
+
+    // 粗體 / 斜體
+    html = html
+      .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+      .replace(/__(.+?)__/g, '<strong>$1</strong>')
+      .replace(/\*(.+?)\*/g, '<em>$1</em>')
+      .replace(/_(.+?)_/g, '<em>$1</em>');
+
+    // 清單：以 - / • 開頭
+    html = html.replace(/^[\s]*[-•] (.+)$/gm, '<li>$1</li>');
+    html = html.replace(/(<li>.*<\/li>(\s*<li>.*<\/li>)*)/gs, '<ul>$1</ul>');
+
+    // 表格
+    html = html.replace(/(\|.*\|\n\|[-| :\n]+\|\n(?:\|.*\|\n)*)/g, tableToHtml);
+
+    // 空行 → 段落分隔
+    html = html.replace(/\n{2,}/g, '</p><p>');
+    html = '<p>' + html + '</p>';
+    html = html.replace(/<p><\/p>/g, '');
+    html = html.replace(/<p>(<h[23]>)/g, '$1');
+    html = html.replace(/(<\/h[23]>)<\/p&gt;/g, '$1');
+    html = html.replace(/<p>(<div class="card">)/g, '$1');
+    html = html.replace(/(<\/div>)<\/p&gt;/g, '$1');
+    html = html.replace(/<p>(<ul>)/g, '$1');
+    html = html.replace(/(<\/ul>)<\/p&gt;/g, '$1');
+    html = html.replace(/<p>(<li>)/g, '$1');
+    html = html.replace(/(<\/li>)<\/p&gt;/g, '$1');
+
+    // 清理多餘空白
+    html = html.replace(/<p>\s*<\/p>/g, '');
+    html = html.replace(/<p>\s*(<h[23]|<div|<ul|<li)/g, '$1');
+    html = html.replace(/(<\/h[23]|<\/div|<\/ul|<\/li)>\s*<\/p&gt;/g, '$1');
+
+    return html;
+  }
+
+  function tableToHtml(match) {
+    const lines = match.trim().split('\n').map(l => l.trim());
+    if (lines.length < 2) return match;
+    const headerLine = lines[0];
+    const headerCells = headerLine.split('|')
+      .filter((c, i, arr) => i > 0 && i < arr.length - 1 && c.trim() !== '')
+      .map(c => c.trim());
+    if (headerCells.length === 0) return match;
+
+    let table = '<table><thead><tr>';
+    headerCells.forEach(h => { table += `<th>${h}</th>`; });
+    table += '</tr></thead><tbody>';
+
+    for (let i = 2; i < lines.length; i++) {
+      const cells = lines[i].split('|')
+        .filter((c, idx, arr) => idx > 0 && idx < arr.length - 1 && c.trim() !== '')
+        .map(c => c.trim());
+      if (cells.length === 0) continue;
+      table += '<tr>';
+      cells.forEach(c => { table += `<td>${c}</td>`; });
+      table += '</tr>';
+    }
+    table += '</tbody></table>';
+    return table;
+  }
+
+  document.addEventListener('DOMContentLoaded', loadReport);
+</script>
+</body>
+</html>
