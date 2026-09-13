@@ -405,7 +405,21 @@
 
 <script>
   // 內容數據 — 初始空，之後有示例再加
-  let strategies = [];
+  let strategies = [
+    {
+      id: 'strategy-1',
+      name: '施傅 5大條件選股法',
+      type: '長期投資',
+      source: 'YouTube「我要做富翁」頻道（2025-01-12）',
+      core: '通過5大基本面條件篩選具持續高增長能力且財務健康的公司，找出像 Tesla/NVIDIA 這樣的增長股。五大條件：1.市值>100億美元；2.收入增長率>15%；3.EPS增長率>15%；4.自由現金流增長向上趨勢；5.負債權益比<0.5。',
+      entry: '1. 市值 > 100億美元（大型公司）\n2. 收入增長率 > 15%（YoY）\n3. EPS增長率 > 15%（YoY）\n4. 自由現金流增長呈向上趨勢\n5. 負債權益比 < 0.5',
+      exit: '定期檢視：若條件惡化（收入增長放緩、債務激增），則減持或賣出。\n止損：-10%至-20%（依風險承受）\n止盈：+30%至+50%（依增長性質分批）。',
+      video: 'https://www.youtube.com/watch?v=Qm3IEFThIbM',
+      note: '適合美股成長股。需要定期檢視財报。結合技術面進入/出場可另行考慮。',
+      rating: 8,
+      status: 'watching',
+    }
+  ];
   let detailStrategyId = null;
 
   const STATUS_MAP = {
@@ -539,8 +553,8 @@
       <div class="section-label">核心邏輯</div>
       <p style="margin:0 0 1rem 0;">${esc(s.core)}</p>
 
-      ${s.entry ? `<div class="section-label">入場條件</div><p style="margin:0 0 1rem 0;">${esc(s.entry)}</p>` : ''}
-      ${s.exit  ? `<div class="section-label">出場條件</div><p style="margin:0 0 1rem 0;">${esc(s.exit)}</p>` : ''}
+      ${s.entry ? `<div class="section-label">入場條件</div><p style="margin:0 0 1rem 0;white-space:pre-wrap;">${esc(s.entry)}</p>` : ''}
+      ${s.exit  ? `<div class="section-label">出場條件</div><p style="margin:0 0 1rem 0;white-space:pre-wrap;">${esc(s.exit)}</p>` : ''}
       ${s.video ? `<div class="section-label">來源視頻</div><a href="${esc(s.video)}" target="_blank" rel="noopener" style="color:var(--accent);">${esc(s.video)} ↗</a>` : ''}
       ${s.note  ? `<div class="section-label">備註</div><p style="margin:0;">${esc(s.note)}</p>` : ''}
     `;
