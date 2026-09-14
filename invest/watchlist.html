@@ -1,0 +1,941 @@
+
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>投資觀察名單 | CRFX</title>
+<style>
+  :root {
+    --bg: #0d1117;
+    --fg: #e6edf3;
+    --muted: #8b949e;
+    --accent: #58a6ff;
+    --card: #161b22;
+    --border: #30363d;
+    --warn: #f0883e;
+    --good: #3fb950;
+    --tag-bg: rgba(88,166,255,0.12);
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--fg);
+    padding: 1.5rem;
+    line-height: 1.6;
+  }
+  .container { max-width: 1100px; margin: 0 auto; }
+  header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+  }
+  h1 { font-size: 1.5rem; margin: 0; font-weight: 600; }
+  .subtitle { color: var(--muted); font-size: 0.9rem; margin-top: 0.25rem; }
+  .header-right { display: flex; gap: 0.75rem; align-items: center; }
+  .header-info {
+    color: var(--muted);
+    font-size: 0.8rem;
+    background: var(--card);
+    padding: 0.35rem 0.7rem;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+  }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1.25rem;
+    margin-bottom: 1.25rem;
+    page-break-inside: avoid;
+  }
+  .card h3 {
+    margin: 0 0 0.75rem 0;
+    font-size: 1.05rem;
+    font-weight: 600;
+  }
+  .card .desc { color: var(--muted); font-size: 0.85rem; margin: 0 0 0.75rem 0; }
+  .section-meta {
+    color: var(--muted);
+    font-size: 0.85rem;
+    background: rgba(139,148,158,0.08);
+    border-left: 3px solid var(--accent);
+    padding: 0.6rem 0.9rem;
+    margin: 0.75rem 0;
+    border-radius: 0 6px 6px 0;
+  }
+  .section-meta strong { color: var(--fg); }
+  .table-wrap {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+  }
+  th, td {
+    text-align: left;
+    padding: 0.55rem 0.6rem;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+  th {
+    color: var(--muted);
+    font-weight: 600;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    background: rgba(139,148,158,0.05);
+    white-space: nowrap;
+  }
+  tr:last-child td { border-bottom: none; }
+  .ticker { font-weight: 600; color: var(--accent); }
+  .good { color: var(--good); }
+  .warn { color: var(--warn); }
+  .muted { color: var(--muted); }
+  .pos { color: var(--good); }
+  .neg { color: var(--warn); }
+  .clues { font-size: 0.82rem; color: var(--muted); }
+  .clues span { display: block; margin-bottom: 0.2rem; }
+  .footer {
+    margin-top: 2rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border);
+    color: var(--muted);
+    font-size: 0.8rem;
+    text-align: center;
+  }
+  @media (max-width: 700px) {
+    body { padding: 1rem; }
+    table { font-size: 0.8rem; }
+    th, td { padding: 0.4rem 0.4rem; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <div>
+      <h1>{'📊 純增長版投資觀察名單'}</h1>
+      <div class="subtitle">31 隻股票 · 回測 + 技術綜合清單 · 觀察用</div>
+    </div>
+    <div class="header-right">
+      <span class="header-info">數據更新：2026-09-13</span>
+    </div>
+  </header>
+
+  <div class="section-meta">
+    <strong>篩選條件：</strong>EPS 增長 >15% + 淨利率 >15% + 市值 >50B &nbsp;|&nbsp;
+    <strong>回測基準：</strong>2023-09-03 → 2026-09-13 · SPY 同期 +69.4% &nbsp;|&nbsp;
+    <strong>統計：</strong>正回報 25 隻（81%）· 跑贏 SPY 11 隻 · 平均回報 +77.3% · 中位數 +48.9%
+  </div>
+
+  <div class="card">
+    <h3>一、回測表現 + 基本面（2023-09-03 → 2026-09-13）</h3>
+    <div class="desc">按 3 年回報降序排列，包含 EPS 增長、淨利率、市值等基本面指標。</div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>股票</th>
+            <th>名稱</th>
+            <th>3年回報</th>
+            <th>跑贏 SPY</th>
+            <th>EPS 增長</th>
+            <th>淨利率</th>
+            <th>市值</th>
+          </tr>
+        </thead>
+        <tbody>
+          
+            <tr>
+              <td><span class="ticker">LRCX</span></td>
+              <td>Lam Research Corporation</td>
+              <td class="pos">+324.8%</td>
+              <td class="good">✓ (+255.4%)</td>
+              <td>25.0%</td>
+              <td>25.9%</td>
+              <td>$87.8B</td>
+            </tr>
+            <tr>
+              <td><span class="ticker">AVGO</span></td>
+              <td>Broadcom Inc.</td>
+              <td class="pos">+314.9%</td>
+              <td class="good">✓ (+245.5%)</td>
+              <td>24.0%</td>
+              <td>34.6%</td>
+              <td>$416.5B</td>
+            </tr>
+            <tr>
+              <td><span class="ticker">APH</span></td>
+              <td>Amphenol Corporation</td>
+              <td class="pos">+279.0%</td>
+              <td class="good">✓ (+209.6%)</td>
+              <td>19.8%</td>
+              <td>15.1%</td>
+              <td>$54.6B</td>
+            </tr>
+            <tr>
+              <td><span class="ticker">KLAC</span></td>
+              <td>KLA Corporation</td>
+              <td class="pos">+256.3%</td>
+              <td class="good">✓ (+186.9%)</td>
+              <td>39.1%</td>
+              <td>32.3%</td>
+              <td>$66.2B</td>
+            </tr>
+            <tr>
+              <td><span class="ticker">AMAT</span></td>
+              <td>Applied Materials, Inc.</td>
+              <td class="pos">+196.4%</td>
+              <td class="good">✓ (+127.0%)</td>
+              <td>21.3%</td>
+              <td>25.3%</td>
+              <td>$122.2B</td>
+            </tr>
+            <tr>
+              <td><span class="ticker">MS</span></td>
+              <td>Morgan Stanley</td>
+              <td class="pos">+150.0%</td>
+              <td class="good">✓ (+80.6%)</td>
+              <td>16.3%</td>
+              <td>32.2%</td>
+              <td>$134.7B</td>
+            </tr>
+            <tr>
+              <td><span class="ticker">ADI</span></td>
+              <td>Analog Devices, Inc.</td>
+              <td class="pos">+107.6%</td>
+              <td class="good">✓ (+38.2%)</td>
+              <td>26.6%</td>
+              <td>22.9%</td>
+              <td>$88.4B</td>
+            </tr>
+            <tr>
+              <td><span class="ticker">AXP</span></td>
+              <td>American Express Company</td>
+              <td class="pos">+103.4%</td>
+              <td class="good">✓ (+34.0%)</td>
+              <td>17.4%</td>
+              <td>22.0%</td>
+              <td>$107.8B</td>
+            </tr>
+            <tr>
+              <td><span class="ticker">COF</span></td>
+              <td>Capital One Financial Corporati</td>
+              <td class="pos">+101.3%</td>
+              <td class="good">✓ (+31.9%)</td>
+              <td>32.6%</td>
+              <td>135.9%</td>
+              <td>$63.5B</td>
+            </tr>
+            <tr>
+              <td><span class="ticker">CSCO</span></td>
+              <td>Cisco Systems, Inc.</td>
+              <td class="pos">+93.9%</td>
+              <td class="good">✓ (+24.5%)</td>
+              <td>105.9%</td>
+              <td>22.1%</td>
+              <td>$228.0B</td>
+            </tr>
+            <tr>
+              <td><span class="ticker">AAPL</span></td>
+              <td>Apple Inc.</td>
+              <td class="pos">+75.4%</td>
+              <td class="good">✓ (+6.0%)</td>
+              <td>21.8%</td>
+              <td>25.3%</td>
+              <td>$2765.0B</td>
+            </tr>
+            <tr>
+              <td><span class="ticker">JNJ</span></td>
+              <td>Johnson & Johnson</td>
+              <td class="pos">+65.5%</td>
+              <td class="muted">✗ (-3.9%)</td>
+              <td>50.2%</td>
+              <td>22.4%</td>
+              <td>$386.7B</td>
+            </tr>
+            <tr>
+              <td><span class="ticker">TXN</span></td>
+              <td>Texas Instruments Incorporated</td>
+              <td class="pos">+58.2%</td>
+              <td class="muted">✗ (-11.2%)</td>
+              <td>19.0%</td>
+              <td>43.7%</td>
+              <td>$155.1B</td>
+            </tr>
+            <tr>
+              <td><span class="ticker">QCOM</span></td>
+              <td>QUALCOMM Incorporated</td>
+              <td class="pos">+57.7%</td>
+              <td class="muted">✗ (-11.7%)</td>
+              <td>47.1%</td>
+              <td>29.3%</td>
+              <td>$123.2B</td>
+            </tr>
+            <tr>
+              <td><span class="ticker">MSFT</span></td>
+              <td>Microsoft Corporation</td>
+              <td class="pos">+50.8%</td>
+              <td class="muted">✗ (-18.6%)</td>
+              <td>32.5%</td>
+              <td>34.1%</td>
+              <td>$2440.5B</td>
+            </tr>
+            <tr>
+              <td><span class="ticker">KO</span></td>
+              <td>Coca-Cola Company (The)</td>
+              <td class="pos">+48.9%</td>
+              <td class="muted">✗ (-20.5%)</td>
+              <td>37.6%</td>
+              <td>22.2%</td>
+              <td>$255.2B</td>
+            </tr>
+            <tr>
+              <td><span class="ticker">AMGN</span></td>
+              <td>Amgen Inc.</td>
+              <td class="pos">+47.0%</td>
+              <td class="muted">✗ (-22.4%)</td>
+              <td>21.7%</td>
+              <td>24.9%</td>
+              <td>$138.8B</td>
+            </tr>
+            <tr>
+              <td><span class="ticker">MA</span></td>
+              <td>Mastercard Incorporated</td>
+              <td class="pos">+37.0%</td>
+              <td class="muted">✗ (-32.4%)</td>
+              <td>19.6%</td>
+              <td>33.3%</td>
+              <td>$361.3B</td>
+            </tr>
+            <tr>
+              <td><span class="ticker">MRK</span></td>
+              <td>Merck & Company, Inc.</td>
+              <td class="pos">+31.0%</td>
+              <td class="muted">✗ (-38.4%)</td>
+              <td>40.3%</td>
+              <td>24.5%</td>
+              <td>$271.0B</td>
+            </tr>
+            <tr>
+              <td><span class="ticker">CVX</span></td>
+              <td>Chevron Corporation</td>
+              <td class="pos">+30.3%</td>
+              <td class="muted">✗ (-39.1%)</td>
+              <td>26.8%</td>
+              <td>15.1%</td>
+              <td>$322.3B</td>
+            </tr>
+            <tr>
+              <td><span class="ticker">ORCL</span></td>
+              <td>Oracle Corporation</td>
+              <td class="pos">+24.3%</td>
+              <td class="muted">✗ (-45.1%)</td>
+              <td>19.3%</td>
+              <td>17.0%</td>
+              <td>$348.3B</td>
+            </tr>
+            <tr>
+              <td><span class="ticker">EOG</span></td>
+              <td>EOG Resources, Inc.</td>
+              <td class="pos">+12.5%</td>
+              <td class="muted">✗ (-56.9%)</td>
+              <td>21.5%</td>
+              <td>30.2%</td>
+              <td>$68.7B</td>
+            </tr>
+            <tr>
+              <td><span class="ticker">COP</span></td>
+              <td>ConocoPhillips</td>
+              <td class="pos">+12.5%</td>
+              <td class="muted">✗ (-56.9%)</td>
+              <td>26.0%</td>
+              <td>30.6%</td>
+              <td>$146.7B</td>
+            </tr>
+            <tr>
+              <td><span class="ticker">TMO</span></td>
+              <td>Thermo Fisher Scientific Inc</td>
+              <td class="pos">+9.4%</td>
+              <td class="muted">✗ (-60.0%)</td>
+              <td>30.3%</td>
+              <td>15.5%</td>
+              <td>$206.0B</td>
+            </tr>
+            <tr>
+              <td><span class="ticker">PSA</span></td>
+              <td>Public Storage</td>
+              <td class="pos">+7.5%</td>
+              <td class="muted">✗ (-61.9%)</td>
+              <td>20.5%</td>
+              <td>104.0%</td>
+              <td>$51.5B</td>
+            </tr>
+            <tr>
+              <td><span class="ticker">ABT</span></td>
+              <td>Abbott Laboratories</td>
+              <td class="neg">-0.9%</td>
+              <td class="muted">✗ (-70.3%)</td>
+              <td>61.7%</td>
+              <td>15.9%</td>
+              <td>$178.0B</td>
+            </tr>
+            <tr>
+              <td><span class="ticker">OXY</span></td>
+              <td>Occidental Petroleum Corporatio</td>
+              <td class="neg">-4.8%</td>
+              <td class="muted">✗ (-74.2%)</td>
+              <td>20.2%</td>
+              <td>36.7%</td>
+              <td>$64.5B</td>
+            </tr>
+            <tr>
+              <td><span class="ticker">PG</span></td>
+              <td>Procter & Gamble Company (The)</td>
+              <td class="neg">-6.0%</td>
+              <td class="muted">✗ (-75.4%)</td>
+              <td>21.0%</td>
+              <td>17.9%</td>
+              <td>$359.1B</td>
+            </tr>
+            <tr>
+              <td><span class="ticker">AON</span></td>
+              <td>Aon plc</td>
+              <td class="neg">-9.5%</td>
+              <td class="muted">✗ (-78.9%)</td>
+              <td>17.3%</td>
+              <td>20.7%</td>
+              <td>$70.9B</td>
+            </tr>
+            <tr>
+              <td><span class="ticker">DHR</span></td>
+              <td>Danaher Corporation</td>
+              <td class="neg">-15.0%</td>
+              <td class="muted">✗ (-84.4%)</td>
+              <td>28.2%</td>
+              <td>27.1%</td>
+              <td>$165.5B</td>
+            </tr>
+            <tr>
+              <td><span class="ticker">ZTS</span></td>
+              <td>Zoetis Inc.</td>
+              <td class="neg">-62.1%</td>
+              <td class="muted">✗ (-131.5%)</td>
+              <td>18.5%</td>
+              <td>26.2%</td>
+              <td>$79.6B</td>
+            </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>二、技術 + 成交量 + Target Price（2026-09-13）</h3>
+    <div class="desc">即時技術指標、成交量相對均線倍數、52週高低三等分 Target Price 參考位置。</div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>股票</th>
+            <th>股價</th>
+            <th>52週</th>
+            <th>MA50</th>
+            <th>MA200</th>
+            <th>RSI</th>
+            <th>MACD 柱</th>
+            <th>成交量<br>(20日倍)</th>
+            <th>Support</th>
+            <th>Base</th>
+            <th>Resistance</th>
+            <th>簡易線索</th>
+          </tr>
+        </thead>
+        <tbody>
+          
+            <tr>
+              <td><span class="ticker">AVGO</span></td>
+              <td>$361.99</td>
+              <td class="muted">$289.96–$495.00</td>
+              <td class="muted">$383.09 (下)</td>
+              <td class="muted">$370.20 (下)</td>
+              <td class="">45</td>
+              <td class="good">+0.10</td>
+              <td class="">0.82x</td>
+              <td style="color:var(--good);">$357.62</td>
+              <td class="muted">$392.48</td>
+              <td style="color:var(--warn);">$427.34</td>
+              <td class="clues"><span class="good">MACD 柱狀轉正 → 多頭動能</span></td>
+            </tr>
+            <tr>
+              <td><span class="ticker">MS</span></td>
+              <td>$214.38</td>
+              <td class="muted">$151.84–$232.25</td>
+              <td class="muted">$215.87 (下)</td>
+              <td class="good">$192.02 (上)</td>
+              <td class="">50</td>
+              <td class="good">+0.01</td>
+              <td class="">1.02x</td>
+              <td style="color:var(--good);">$178.38</td>
+              <td class="muted">$192.05</td>
+              <td style="color:var(--warn);">$205.71</td>
+              <td class="clues"><span class="good">MACD 柱狀轉正 → 多頭動能</span></td>
+            </tr>
+            <tr>
+              <td><span class="ticker">JNJ</span></td>
+              <td>$265.58</td>
+              <td class="muted">$173.33–$281.07</td>
+              <td class="good">$262.71 (上)</td>
+              <td class="good">$237.12 (上)</td>
+              <td class="">44</td>
+              <td class="muted">-1.12</td>
+              <td class="">0.75x</td>
+              <td style="color:var(--good);">$208.88</td>
+              <td class="muted">$227.20</td>
+              <td style="color:var(--warn);">$245.52</td>
+              <td class="clues"><span>常規觀察</span></td>
+            </tr>
+            <tr>
+              <td><span class="ticker">TXN</span></td>
+              <td>$268.70</td>
+              <td class="muted">$152.73–$334.03</td>
+              <td class="muted">$277.64 (下)</td>
+              <td class="good">$241.48 (上)</td>
+              <td class="">54</td>
+              <td class="good">+1.41</td>
+              <td class="">0.97x</td>
+              <td style="color:var(--good);">$212.56</td>
+              <td class="muted">$243.38</td>
+              <td style="color:var(--warn);">$274.20</td>
+              <td class="clues"><span class="good">MACD 柱狀轉正 → 多頭動能</span></td>
+            </tr>
+            <tr>
+              <td><span class="ticker">AMGN</span></td>
+              <td>$377.35</td>
+              <td class="muted">$269.77–$447.03</td>
+              <td class="muted">$399.10 (下)</td>
+              <td class="good">$359.37 (上)</td>
+              <td class="good">19</td>
+              <td class="muted">-9.20</td>
+              <td class="">0.88x</td>
+              <td style="color:var(--good);">$328.27</td>
+              <td class="muted">$358.40</td>
+              <td style="color:var(--warn);">$388.53</td>
+              <td class="clues"><span class="good">RSI<30 超賣 + 價格喺 MA200 上方 → 觀察低吸</span></td>
+            </tr>
+            <tr>
+              <td><span class="ticker">MRK</span></td>
+              <td>$143.93</td>
+              <td class="muted">$77.58–$156.92</td>
+              <td class="good">$136.04 (上)</td>
+              <td class="good">$119.41 (上)</td>
+              <td class="">35</td>
+              <td class="muted">-1.40</td>
+              <td class="">0.78x</td>
+              <td style="color:var(--good);">$103.76</td>
+              <td class="muted">$117.25</td>
+              <td style="color:var(--warn);">$130.74</td>
+              <td class="clues"><span>常規觀察</span></td>
+            </tr>
+            <tr>
+              <td><span class="ticker">CVX</span></td>
+              <td>$214.06</td>
+              <td class="muted">$146.49–$217.40</td>
+              <td class="good">$194.74 (上)</td>
+              <td class="good">$182.34 (上)</td>
+              <td class="">65</td>
+              <td class="good">+0.31</td>
+              <td class="">0.85x</td>
+              <td style="color:var(--good);">$169.89</td>
+              <td class="muted">$181.94</td>
+              <td style="color:var(--warn);">$194.00</td>
+              <td class="clues"><span class="good">MACD 柱狀轉正 → 多頭動能</span></td>
+            </tr>
+            <tr>
+              <td><span class="ticker">PG</span></td>
+              <td>$145.27</td>
+              <td class="muted">$137.62–$167.25</td>
+              <td class="muted">$146.42 (下)</td>
+              <td class="muted">$147.49 (下)</td>
+              <td class="">52</td>
+              <td class="muted">-0.01</td>
+              <td class="warn">1.23x</td>
+              <td style="color:var(--good);">$147.40</td>
+              <td class="muted">$152.44</td>
+              <td style="color:var(--warn);">$157.47</td>
+              <td class="clues"><span class="warn">放量 (1.23x) → 波動放大，注意方向</span></td>
+            </tr>
+            <tr>
+              <td><span class="ticker">LRCX</span></td>
+              <td>$298.22</td>
+              <td class="muted">$117.03–$438.50</td>
+              <td class="muted">$314.24 (下)</td>
+              <td class="good">$264.19 (上)</td>
+              <td class="">42</td>
+              <td class="muted">-0.02</td>
+              <td class="warn">1.23x</td>
+              <td style="color:var(--good);">$223.12</td>
+              <td class="muted">$277.76</td>
+              <td style="color:var(--warn);">$332.41</td>
+              <td class="clues"><span class="warn">放量 (1.23x) → 波動放大，注意方向</span></td>
+            </tr>
+            <tr>
+              <td><span class="ticker">APH</span></td>
+              <td>$83.92</td>
+              <td class="muted">$58.67–$89.26</td>
+              <td class="good">$80.27 (上)</td>
+              <td class="good">$73.17 (上)</td>
+              <td class="">64</td>
+              <td class="good">+0.22</td>
+              <td class="">0.96x</td>
+              <td style="color:var(--good);">$68.76</td>
+              <td class="muted">$73.97</td>
+              <td style="color:var(--warn);">$79.17</td>
+              <td class="clues"><span class="good">MACD 柱狀轉正 → 多頭動能</span></td>
+            </tr>
+            <tr>
+              <td><span class="ticker">KLAC</span></td>
+              <td>$180.64</td>
+              <td class="muted">$96.70–$307.37</td>
+              <td class="muted">$198.46 (下)</td>
+              <td class="good">$172.92 (上)</td>
+              <td class="">47</td>
+              <td class="good">+1.12</td>
+              <td class="">0.83x</td>
+              <td style="color:var(--good);">$166.22</td>
+              <td class="muted">$202.03</td>
+              <td style="color:var(--warn);">$237.85</td>
+              <td class="clues"><span class="good">MACD 柱狀轉正 → 多頭動能</span></td>
+            </tr>
+            <tr>
+              <td><span class="ticker">AMAT</span></td>
+              <td>$456.49</td>
+              <td class="muted">$168.53–$739.67</td>
+              <td class="muted">$516.85 (下)</td>
+              <td class="good">$411.80 (上)</td>
+              <td class="">35</td>
+              <td class="good">+1.06</td>
+              <td class="">0.64x</td>
+              <td style="color:var(--good);">$357.01</td>
+              <td class="muted">$454.10</td>
+              <td style="color:var(--warn);">$551.19</td>
+              <td class="clues"><span class="good">MACD 柱狀轉正 → 多頭動能</span></td>
+            </tr>
+            <tr>
+              <td><span class="ticker">ADI</span></td>
+              <td>$378.78</td>
+              <td class="muted">$223.47–$445.91</td>
+              <td class="good">$375.43 (上)</td>
+              <td class="good">$351.04 (上)</td>
+              <td class="">55</td>
+              <td class="good">+1.13</td>
+              <td class="">0.80x</td>
+              <td style="color:var(--good);">$296.88</td>
+              <td class="muted">$334.69</td>
+              <td style="color:var(--warn);">$372.50</td>
+              <td class="clues"><span class="good">MACD 柱狀轉正 → 多頭動能</span></td>
+            </tr>
+            <tr>
+              <td><span class="ticker">AXP</span></td>
+              <td>$324.69</td>
+              <td class="muted">$290.97–$387.49</td>
+              <td class="muted">$339.96 (下)</td>
+              <td class="muted">$336.67 (下)</td>
+              <td class="">33</td>
+              <td class="muted">-0.91</td>
+              <td class="">0.82x</td>
+              <td style="color:var(--good);">$322.82</td>
+              <td class="muted">$339.23</td>
+              <td style="color:var(--warn);">$355.64</td>
+              <td class="clues"><span>常規觀察</span></td>
+            </tr>
+            <tr>
+              <td><span class="ticker">COF</span></td>
+              <td>$208.30</td>
+              <td class="muted">$174.24–$259.64</td>
+              <td class="muted">$212.39 (下)</td>
+              <td class="good">$207.72 (上)</td>
+              <td class="">35</td>
+              <td class="muted">-1.47</td>
+              <td class="">0.81x</td>
+              <td style="color:var(--good);">$202.42</td>
+              <td class="muted">$216.94</td>
+              <td style="color:var(--warn);">$231.46</td>
+              <td class="clues"><span>常規觀察</span></td>
+            </tr>
+            <tr>
+              <td><span class="ticker">CSCO</span></td>
+              <td>$112.13</td>
+              <td class="muted">$66.35–$130.37</td>
+              <td class="muted">$113.73 (下)</td>
+              <td class="good">$95.41 (上)</td>
+              <td class="">54</td>
+              <td class="good">+0.10</td>
+              <td class="">0.92x</td>
+              <td style="color:var(--good);">$87.48</td>
+              <td class="muted">$98.36</td>
+              <td style="color:var(--warn);">$109.24</td>
+              <td class="clues"><span class="good">MACD 柱狀轉正 → 多頭動能</span></td>
+            </tr>
+            <tr>
+              <td><span class="ticker">AAPL</span></td>
+              <td>$332.27</td>
+              <td class="muted">$235.03–$344.57</td>
+              <td class="good">$317.97 (上)</td>
+              <td class="good">$284.95 (上)</td>
+              <td class="warn">71</td>
+              <td class="good">+1.32</td>
+              <td class="">1.19x</td>
+              <td style="color:var(--good);">$271.18</td>
+              <td class="muted">$289.80</td>
+              <td style="color:var(--warn);">$308.42</td>
+              <td class="clues"><span class="warn">RSI>70 超買 → 警惕回調</span>
+<span class="good">MACD 柱狀轉正 → 多頭動能</span></td>
+            </tr>
+            <tr>
+              <td><span class="ticker">QCOM</span></td>
+              <td>$181.97</td>
+              <td class="muted">$121.99–$259.92</td>
+              <td class="good">$168.60 (上)</td>
+              <td class="good">$168.10 (上)</td>
+              <td class="warn">78</td>
+              <td class="good">+2.30</td>
+              <td class="">1.05x</td>
+              <td style="color:var(--good);">$167.51</td>
+              <td class="muted">$190.96</td>
+              <td style="color:var(--warn);">$214.40</td>
+              <td class="clues"><span class="warn">RSI>70 超買 → 警惕回調</span>
+<span class="good">MACD 柱狀轉正 → 多頭動能</span></td>
+            </tr>
+            <tr>
+              <td><span class="ticker">MSFT</span></td>
+              <td>$495.63</td>
+              <td class="muted">$349.20–$553.72</td>
+              <td class="good">$453.67 (上)</td>
+              <td class="good">$431.26 (上)</td>
+              <td class="">58</td>
+              <td class="muted">-3.84</td>
+              <td class="">0.70x</td>
+              <td style="color:var(--good);">$416.69</td>
+              <td class="muted">$451.46</td>
+              <td style="color:var(--warn);">$486.23</td>
+              <td class="clues"><span>常規觀察</span></td>
+            </tr>
+            <tr>
+              <td><span class="ticker">KO</span></td>
+              <td>$88.29</td>
+              <td class="muted">$65.35–$92.49</td>
+              <td class="good">$86.55 (上)</td>
+              <td class="good">$78.77 (上)</td>
+              <td class="">35</td>
+              <td class="muted">-0.38</td>
+              <td class="">0.69x</td>
+              <td style="color:var(--good);">$74.31</td>
+              <td class="muted">$78.92</td>
+              <td style="color:var(--warn);">$83.53</td>
+              <td class="clues"><span>常規觀察</span></td>
+            </tr>
+            <tr>
+              <td><span class="ticker">MA</span></td>
+              <td>$569.19</td>
+              <td class="muted">$464.52–$601.62</td>
+              <td class="good">$562.28 (上)</td>
+              <td class="good">$531.08 (上)</td>
+              <td class="">43</td>
+              <td class="muted">-4.22</td>
+              <td class="">0.77x</td>
+              <td style="color:var(--good);">$509.76</td>
+              <td class="muted">$533.07</td>
+              <td style="color:var(--warn);">$556.38</td>
+              <td class="clues"><span>常規觀察</span></td>
+            </tr>
+            <tr>
+              <td><span class="ticker">ORCL</span></td>
+              <td>$150.28</td>
+              <td class="muted">$114.50–$329.50</td>
+              <td class="good">$140.68 (上)</td>
+              <td class="muted">$167.64 (下)</td>
+              <td class="">53</td>
+              <td class="good">+0.47</td>
+              <td class="warn">2.98x</td>
+              <td style="color:var(--good);">$185.45</td>
+              <td class="muted">$222.00</td>
+              <td style="color:var(--warn);">$258.55</td>
+              <td class="clues"><span class="good">MACD 柱狀轉正 → 多頭動能</span>
+<span class="warn">放量 (2.98x) → 波動放大，注意方向</span></td>
+            </tr>
+            <tr>
+              <td><span class="ticker">EOG</span></td>
+              <td>$147.36</td>
+              <td class="muted">$101.59–$153.67</td>
+              <td class="good">$142.82 (上)</td>
+              <td class="good">$129.47 (上)</td>
+              <td class="">37</td>
+              <td class="muted">-0.24</td>
+              <td class="">1.11x</td>
+              <td style="color:var(--good);">$118.78</td>
+              <td class="muted">$127.63</td>
+              <td style="color:var(--warn);">$136.48</td>
+              <td class="clues"><span>常規觀察</span></td>
+            </tr>
+            <tr>
+              <td><span class="ticker">COP</span></td>
+              <td>$137.35</td>
+              <td class="muted">$85.57–$138.89</td>
+              <td class="good">$122.74 (上)</td>
+              <td class="good">$113.70 (上)</td>
+              <td class="">56</td>
+              <td class="muted">-0.12</td>
+              <td class="">0.87x</td>
+              <td style="color:var(--good);">$103.17</td>
+              <td class="muted">$112.23</td>
+              <td style="color:var(--warn);">$121.29</td>
+              <td class="clues"><span>常規觀察</span></td>
+            </tr>
+            <tr>
+              <td><span class="ticker">TMO</span></td>
+              <td>$609.82</td>
+              <td class="muted">$435.27–$647.00</td>
+              <td class="good">$578.49 (上)</td>
+              <td class="good">$536.63 (上)</td>
+              <td class="">39</td>
+              <td class="muted">-4.43</td>
+              <td class="">1.07x</td>
+              <td style="color:var(--good);">$505.14</td>
+              <td class="muted">$541.13</td>
+              <td style="color:var(--warn);">$577.13</td>
+              <td class="clues"><span>常規觀察</span></td>
+            </tr>
+            <tr>
+              <td><span class="ticker">PSA</span></td>
+              <td>$296.50</td>
+              <td class="muted">$256.54–$335.55</td>
+              <td class="muted">$318.38 (下)</td>
+              <td class="muted">$298.32 (下)</td>
+              <td class="good">23</td>
+              <td class="muted">-1.97</td>
+              <td class="">0.91x</td>
+              <td style="color:var(--good);">$282.61</td>
+              <td class="muted">$296.05</td>
+              <td style="color:var(--warn);">$309.48</td>
+              <td class="clues"><span>常規觀察</span></td>
+            </tr>
+            <tr>
+              <td><span class="ticker">ABT</span></td>
+              <td>$101.95</td>
+              <td class="muted">$81.97–$137.49</td>
+              <td class="muted">$105.30 (下)</td>
+              <td class="muted">$105.84 (下)</td>
+              <td class="good">12</td>
+              <td class="muted">-1.65</td>
+              <td class="">1.06x</td>
+              <td style="color:var(--good);">$100.29</td>
+              <td class="muted">$109.73</td>
+              <td style="color:var(--warn);">$119.17</td>
+              <td class="clues"><span>常規觀察</span></td>
+            </tr>
+            <tr>
+              <td><span class="ticker">OXY</span></td>
+              <td>$61.46</td>
+              <td class="muted">$38.80–$67.45</td>
+              <td class="good">$57.10 (上)</td>
+              <td class="good">$52.79 (上)</td>
+              <td class="">51</td>
+              <td class="muted">-0.02</td>
+              <td class="">1.10x</td>
+              <td style="color:var(--good);">$48.25</td>
+              <td class="muted">$53.12</td>
+              <td style="color:var(--warn);">$58.00</td>
+              <td class="clues"><span>常規觀察</span></td>
+            </tr>
+            <tr>
+              <td><span class="ticker">AON</span></td>
+              <td>$302.69</td>
+              <td class="muted">$302.44–$382.34</td>
+              <td class="muted">$351.13 (下)</td>
+              <td class="muted">$336.46 (下)</td>
+              <td class="good">23</td>
+              <td class="muted">-4.28</td>
+              <td class="warn">1.69x</td>
+              <td style="color:var(--good);">$328.81</td>
+              <td class="muted">$342.39</td>
+              <td style="color:var(--warn);">$355.97</td>
+              <td class="clues"><span class="warn">放量 (1.69x) → 波動放大，注意方向</span></td>
+            </tr>
+            <tr>
+              <td><span class="ticker">DHR</span></td>
+              <td>$200.14</td>
+              <td class="muted">$160.93–$242.80</td>
+              <td class="muted">$202.38 (下)</td>
+              <td class="muted">$202.39 (下)</td>
+              <td class="good">19</td>
+              <td class="muted">-2.08</td>
+              <td class="">1.14x</td>
+              <td style="color:var(--good);">$187.95</td>
+              <td class="muted">$201.87</td>
+              <td style="color:var(--warn);">$215.78</td>
+              <td class="clues"><span>常規觀察</span></td>
+            </tr>
+            <tr>
+              <td><span class="ticker">ZTS</span></td>
+              <td>$72.97</td>
+              <td class="muted">$71.00–$149.75</td>
+              <td class="muted">$75.56 (下)</td>
+              <td class="muted">$102.14 (下)</td>
+              <td class="good">28</td>
+              <td class="muted">-0.41</td>
+              <td class="">1.12x</td>
+              <td style="color:var(--good);">$96.99</td>
+              <td class="muted">$110.38</td>
+              <td style="color:var(--warn);">$123.76</td>
+              <td class="clues"><span>常規觀察</span></td>
+            </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>三、點樣用呢個清單</h3>
+    <div class="desc">參考流程，幫手快速篩選值得深入研究嘅股票。</div>
+    <div style="font-size:0.9rem;">
+      <div style="margin-bottom:0.75rem;">
+        <strong>1. 先看回報 + 跑贏 SPY</strong>：
+        篩選出歷史表現較強、基本面穩健嘅股。
+      </div>
+      <div style="margin-bottom:0.75rem;">
+        <strong>2. 再看技術位置</strong>：
+        <ul style="margin:0.25rem 0 0 1.2rem;">
+          <li>股價喺 MA200 上方 + RSI&lt;30：可能係回調做多機會。</li>
+          <li>股價喺 MA50/MA200 下方 + RSI&gt;70：超買警惕，唔適合追高。</li>
+          <li>MACD 柱狀轉正：動能剛轉強，留意確認。</li>
+        </ul>
+      </div>
+      <div style="margin-bottom:0.75rem;">
+        <strong>3. Target Price 作為參考</strong>：
+        Support 附近考慮觀察，Resistance 附近 caution。
+      </div>
+      <div>
+        <strong>4. 成交量放大</strong>（20日倍 &gt;1.2x）：
+        代表市場注意，配合方向用。
+      </div>
+    </div>
+    <div class="section-meta" style="margin-top:1rem;">
+      <strong>備註：</strong>技術數據係基於 yfinance 歷史數據， target price 係 52週高低三等分簡化位置，唔係嚴謹的技術分析目標。用作觀察清單，唔係投資建議。
+    </div>
+  </div>
+
+  <div class="footer">
+    <p>投資觀察名單 · 僅供參考，唔係投資建議 · 執行決定由 Samuel 自己做</p>
+  </div>
+</div>
+</body>
+</html>
